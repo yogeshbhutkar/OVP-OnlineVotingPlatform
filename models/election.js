@@ -11,10 +11,42 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-       election.belongsTo(models.User, {
+       election.belongsTo(models.Users, {
         foreignKey: "userId",
       });
     }
+
+    static getElections(userId){
+      return this.findAll({
+        where: {
+          userId,
+        }
+      })
+    }
+
+    static async remove(id, userId) {
+      return this.destroy({
+        where: {
+          id,
+          userId,
+        },
+      });
+    }
+
+    static addElection({ name, url, userId }) {
+      return this.create({
+        name: name,
+        url: url,
+        isRunning: false,
+        isEnded: false,
+        userId,
+      });
+    }
+
+    setElectionTitle(val){
+      return this.update({name:val})
+    }
+
   }
   election.init({
     name: DataTypes.STRING,

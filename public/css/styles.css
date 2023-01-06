@@ -1,0 +1,15 @@
+.wrapper {
+    position: relative;
+}
+
+.wrapper-element {
+    position: absolute;
+    z-index: -1;
+    left: 0;
+    top: 0;
+    padding-top: 3% !important;
+}
+
+.delete-icon:hover {
+    color: #c288f8;
+}

@@ -5,7 +5,7 @@ const bodyParser = require("body-parser")
 const session = require("express-session")
 
 //Fetching the schemas from DB
-const {User} = require("./models")
+const {Users, election} = require("./models")
 
 //For authentication.
 const passport = require("passport")
@@ -43,7 +43,7 @@ passport.use(
         passwordField: "password",
       },
       (username, password, done) => {
-        User.findOne({ where: { email: username } })
+        Users.findOne({ where: { email: username } })
           .then(async (user) => {
             const result = await bcrypt.compare(password, user.password)
             if (result) {
@@ -65,7 +65,7 @@ passport.use(
   });
   
   passport.deserializeUser((id, done) => {
-    User.findByPk(id)
+    Users.findByPk(id)
       .then((user) => {
         done(null, user);
       })
@@ -103,7 +103,7 @@ app.get('/signup', (req, res)=>{
     res.render('signup', {
         data:"Sign up",
         logout:"",
-        title: "Sign out"
+        title: "Sign up"
     })
 })
 
@@ -111,7 +111,7 @@ app.get('/signup', (req, res)=>{
 app.post('/signup-post', async (req, res)=>{
     const hashedPwd = await bcrypt.hash(req.body.password, saltRounds)
     try{
-        const user = await User.create({
+        const user = await Users.create({
             firstName: req.body.firstName,
             lastName: req.body.lastName,
             email: req.body.email,
@@ -154,17 +154,104 @@ app.get("/signout", (request, response, next) => {
 
 
 //route for dashboard. (After sign up or login the user will be redirected here.)
-app.get('/dashboard', connectEnsureLogin.ensureLoggedIn(), (req, res)=>{
-    const username =  req.user.firstName + req.user.lastName;
-    console.log(username+"username")
+app.get('/dashboard', connectEnsureLogin.ensureLoggedIn(), async (req, res)=>{
+    const username =  req.user.firstName + " " + req.user.lastName
+    const userId = req.user.id
+
+    const elections = await election.getElections(userId)
     res.render('dashboard', {
         data: 'Dashboard',
         logout: "Sign out",
         title: "Dashboard",
         username: username,
+        elections: elections,
     })
 })
 
+//Route to create an election.
+app.get('/create-election', connectEnsureLogin.ensureLoggedIn(), (req, res)=>{
+    res.render('createElection',{
+        data: 'Create an Election',
+        logout: "Sign out",
+        title: "Create Election"
+    })
+})
 
+//Route to delete an election.
+app.delete(
+  "/delete-election/:id",
+  connectEnsureLogin.ensureLoggedIn(),
+  async function (request, response) {
+    console.log("We have to delete a Todo with ID: ", request.params.id);
+    try {
+      await election.remove(request.params.id, request.user.id);
+      return response.json({ success: true });
+    } catch (error) {
+      return response.status(422).json(error);
+    }
+  }
+)
+
+//Route to add a new election to db.
+app.post('/dbElectionCreate', connectEnsureLogin.ensureLoggedIn(), async (req, res)=>{
+    try{
+        await election.addElection({
+            name: req.body.electionName,
+            url : '/'+req.body.electionName+'/',
+            userId : req.user.id,
+        })
+        res.redirect('/dashboard')
+    }catch(err){
+        console.log(err);
+    }
+})
+
+//Route to handle election.
+app.get('/handle-election/:id',  connectEnsureLogin.ensureLoggedIn(), async (req, res)=>{
+  const electionDetail = await election.findOne({
+    where: {
+      id:  req.params.id,
+    }
+  })
+  res.render('handleElection', {
+    data: 'Handle Election',
+    logout: "Sign out",
+    title: "Handle Election",
+    electionDetail: electionDetail,
+  })
+})
+
+app.get('/edit-election-title/:id', connectEnsureLogin.ensureLoggedIn(), async (req, res)=>{
+  const element = await election.findByPk(req.params.id)
+  res.render('editTitle',
+  {
+    data: 'Handle Election',
+    logout: "Sign out",
+    title: "Handle Election",
+    element:element
+  })
+})
+
+//Route to update the title of the election.
+app.get('/edit-title/:id',  connectEnsureLogin.ensureLoggedIn(), async (req, res)=>{
+  try{
+    const element = await election.findByPk(req.params.id)
+    return res.json(element)
+  }catch(err){
+    console.log(err)
+    return res.status(422).json(err);
+  }
+  
+})
+app.put('/edit-title/:id',  connectEnsureLogin.ensureLoggedIn(), async (req, res)=>{
+  try{
+    const element = await election.findByPk(req.params.id)
+    const updatedElement = await element.setElectionTitle(req.body.name)
+    return res.json(updatedElement)
+  }catch(err){
+    console.log(err)
+    return res.status(422).json(err)
+  }
+})
 //Exporting the app here so that it can be imported from index and rendered through it.
 module.exports = app;

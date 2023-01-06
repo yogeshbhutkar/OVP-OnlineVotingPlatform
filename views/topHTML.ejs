@@ -8,6 +8,50 @@
     <!-- Tailwind CSS CDN  -->
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- Font Awesome Icon Pack -->
+    <script
+      src="https://kit.fontawesome.com/3e6a5470c9.js"
+      crossorigin="anonymous"
+    ></script>
+
     <title><%= title %></title>
+
+    <!-- External css -->
+    <link rel="stylesheet" href="/css/styles.css"/>
+
+    <!-- Other JS scripts -->
+    <script>
+        function deleteElection(id){
+            fetch(`/delete-election/${id}`, {
+                method: "delete",
+                headers: {"Content-Type": "application/json"},
+            })
+                .then((res)=>{
+                    if (res.ok){
+                        window.location.reload();
+                    }
+                })
+                    .catch((err)=>{
+                        console.error(err);
+                    })
+        }
+        function updateElection(id){
+            console.log(document.getElementById('title').value)
+            fetch(`/edit-title/${id}`, {
+                method: "put",
+                headers: { "Content-Type": "application/json"},
+                body: JSON.stringify({
+                    "name":document.getElementById('title').value,
+                })
+            })
+                .then((res)=>{
+                    if (res.ok) {
+                        window.location.href = `/handle-election/${id}`;
+                    }
+                })
+                    .catch((err)=> console.error(error));
+        }
+    </script>
+
 </head>
 <body>
