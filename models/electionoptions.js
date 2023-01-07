@@ -10,7 +10,29 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
+      electionOptions.belongsTo(models.electionQuestions, {
+        foreignKey: "questionId",
+        onDelete: "CASCADE",
+      });
+      electionOptions.hasMany(models.electionAnswers, {
+        foreignKey: "chosenOption",
+      });
       // define association here
+    }
+
+    static getOptions(questionId){
+      return this.findAll({
+        where: {
+          questionId,
+        }
+      })
+    }
+
+    static addOptions({ option, questionId }) {
+      return this.create({
+        option,
+        questionId,
+      });
     }
   }
   electionOptions.init({

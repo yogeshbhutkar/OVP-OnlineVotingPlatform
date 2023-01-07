@@ -14,6 +14,9 @@ module.exports = (sequelize, DataTypes) => {
       electionQuestions.belongsTo(models.election, {
         foreignKey: "electionId",
       });
+      electionQuestions.hasMany(models.electionOptions, {
+        foreignKey: "questionId",
+      });
     }
 
     static addQuestion({ question, description, electionId }) {

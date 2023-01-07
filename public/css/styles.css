@@ -2,6 +2,10 @@
     position: relative;
 }
 
+body {
+    background-color: #11192A !important;
+}
+
 .wrapper-element {
     position: absolute;
     z-index: -1;
@@ -12,4 +16,8 @@
 
 .delete-icon:hover {
     color: #c288f8;
+}
+
+.set-width {
+    width: 30%;
 }

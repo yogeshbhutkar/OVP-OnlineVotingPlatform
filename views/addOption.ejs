@@ -1,0 +1,29 @@
+<%- include('topHTML.ejs') %>
+    <div class="wrapper">
+        <%- include('navbar.ejs') %>
+        <div class="bg-gray-50 dark:bg-gray-900 flex flex-col px-10 py-8 mx-auto md:h-screen lg:py-0 wrapper-element w-full ">
+            <div class="px-10 py-10">
+                <h1 class="text-white text-4xl font-semibold inline">Add Options</h1>
+            </div>
+            <div class="text-white px-10 py-3">
+                <% if (options.length==0) { %>
+                    <p class="text-white pb-4 text-lg font-normal">Add options to see them here.</p>
+                <%}%>
+                <% if (options.length!=0) { %> 
+                    <p class="text-white pb-4 text-lg font-semibold">Added options are</p>
+                    <% for (var i=0; i<options.length; i++){ %>
+                        <div>
+                            <input type="radio" disabled class=""/>
+                            <p class="text-white pb-4 text-lg font-normal pl-3 inline-block"><%= options[i].option %></p> 
+                        </div>
+                    <% } %> 
+                <% } %> 
+                <form action="/add-option-to-db/<%=question.id%>" method="post" class="pt-7">
+                    <input type="text" name="option" id="option" class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block set-width p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 inline" placeholder="An option goes here." required="">
+
+                    <button type="submit" class="text-white bg-purple-700 hover:bg-purple-800 font-medium rounded px-5 py-2  inline-block ml-5">Add option</button>
+                </form>
+            </div>
+        </div>
+    </div>
+<%- include('bottomHTML.ejs') %>

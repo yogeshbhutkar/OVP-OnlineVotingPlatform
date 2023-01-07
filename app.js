@@ -5,7 +5,7 @@ const bodyParser = require("body-parser")
 const session = require("express-session")
 
 //Fetching the schemas from DB
-const {Users, election, electionQuestions} = require("./models")
+const {Users, election, electionQuestions, electionOptions} = require("./models")
 
 //For authentication.
 const passport = require("passport")
@@ -308,12 +308,46 @@ app.get('/new-question/:id',connectEnsureLogin.ensureLoggedIn(), async (req, res
 //Route to post the data of creating a question inside of an election.
 app.post('/new-question/:id',connectEnsureLogin.ensureLoggedIn(), async (req, res)=>{
   try{
-    await electionQuestions.addQuestion({
+    const newQuestion = await electionQuestions.addQuestion({
         question: req.body.question,
         description : req.body.description,
         electionId : req.params.id,
     })
-    res.redirect('/manage-questions/'+req.params.id)
+    res.redirect('/add-options/'+newQuestion.id)
+  }catch(err){
+    console.log(err)
+  }
+})
+
+//Route to add the options.
+//id is question's id.
+app.get('/add-options/:id', connectEnsureLogin.ensureLoggedIn(), async (req, res)=>{
+  const question = await electionQuestions.findOne({
+    where: {
+      id:req.params.id
+    }
+  })
+
+
+  const options = await electionOptions.getOptions(question.id)
+
+  res.render('addOption',
+  {
+    data: 'Add options',
+    logout: "Sign out",
+    title: "Add options",
+    question,
+    options
+  })
+})
+
+app.post('/add-option-to-db/:id', connectEnsureLogin.ensureLoggedIn(), async (req, res)=>{
+  try{
+     const option = await electionOptions.addOptions({
+        option: req.body.option,
+        questionId: req.params.id,
+    })
+    res.redirect('/add-options/'+option.questionId)
   }catch(err){
     console.log(err);
   }
