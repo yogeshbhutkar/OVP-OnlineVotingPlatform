@@ -213,11 +213,13 @@ app.get('/handle-election/:id',  connectEnsureLogin.ensureLoggedIn(), async (req
       id:  req.params.id,
     }
   })
+  const questions = await electionQuestions.getElectionQuestions(electionDetail.id)
   res.render('handleElection', {
     data: 'Handle Election',
     logout: "Sign out",
     title: "Handle Election",
     electionDetail: electionDetail,
+    questions: questions
   })
 })
 
@@ -261,11 +263,13 @@ app.get('/manage-questions/:id', connectEnsureLogin.ensureLoggedIn(), async(req,
       id:  req.params.id,
     }
   })
+  const questions = await electionQuestions.getElectionQuestions(electionDetail.id)
   res.render('manageQuestions', {
     data: 'Manage Questions',
     logout: "Sign out",
     title: "Manage Questions",
     electionDetail: electionDetail,
+    questions: questions,
   })
 })
 
