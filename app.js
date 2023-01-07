@@ -264,12 +264,26 @@ app.get('/manage-questions/:id', connectEnsureLogin.ensureLoggedIn(), async(req,
     }
   })
   const questions = await electionQuestions.getElectionQuestions(electionDetail.id)
+  var option = [];
+  for (var i=0; i<questions.length; i++){
+    const options = await electionOptions.getOptions(questions[i].id)
+    for (var j=0; j<options.length; j++){
+      const item = {
+        name: options[j].option,
+        id: options[j].questionId
+      }
+      option.push(item)
+    }
+  }
+
+  
   res.render('manageQuestions', {
     data: 'Manage Questions',
     logout: "Sign out",
     title: "Manage Questions",
     electionDetail: electionDetail,
     questions: questions,
+    option: option
   })
 })
 
