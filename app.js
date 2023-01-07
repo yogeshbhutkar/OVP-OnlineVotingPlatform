@@ -5,7 +5,7 @@ const bodyParser = require("body-parser")
 const session = require("express-session")
 
 //Fetching the schemas from DB
-const {Users, election} = require("./models")
+const {Users, election, electionQuestions} = require("./models")
 
 //For authentication.
 const passport = require("passport")
@@ -253,5 +253,67 @@ app.put('/edit-title/:id',  connectEnsureLogin.ensureLoggedIn(), async (req, res
     return res.status(422).json(err)
   }
 })
+
+//managing questions.
+app.get('/manage-questions/:id', connectEnsureLogin.ensureLoggedIn(), async(req, res)=>{
+  const electionDetail = await election.findOne({
+    where: {
+      id:  req.params.id,
+    }
+  })
+  res.render('manageQuestions', {
+    data: 'Manage Questions',
+    logout: "Sign out",
+    title: "Manage Questions",
+    electionDetail: electionDetail,
+  })
+})
+
+//Route for creating a question 
+app.get('/create-question/:id',connectEnsureLogin.ensureLoggedIn(), async(req, res)=>{
+  const electionDetail = await election.findOne({
+    where: {
+      id:  req.params.id,
+    }
+  })
+  res.render('createQuestion', {
+    data: 'Manage Questions',
+    logout: "Sign out",
+    title: "Manage Questions",
+    electionDetail: electionDetail
+  })
+})
+
+//Route for creating a new question
+app.get('/new-question/:id',connectEnsureLogin.ensureLoggedIn(), async (req, res)=>{
+  const electionDetail = await election.findOne({
+    where: {
+      id:  req.params.id,
+    }
+  })
+  res.render('newQuestion',
+  {
+    data: 'Create New Question',
+    logout: "Sign out",
+    title: "Create New Question",
+    electionDetail: electionDetail,
+  }
+  );
+})
+
+//Route to post the data of creating a question inside of an election.
+app.post('/new-question/:id',connectEnsureLogin.ensureLoggedIn(), async (req, res)=>{
+  try{
+    await electionQuestions.addQuestion({
+        question: req.body.question,
+        description : req.body.description,
+        electionId : req.params.id,
+    })
+    res.redirect('/manage-questions/'+req.params.id)
+  }catch(err){
+    console.log(err);
+  }
+})
+
 //Exporting the app here so that it can be imported from index and rendered through it.
 module.exports = app;

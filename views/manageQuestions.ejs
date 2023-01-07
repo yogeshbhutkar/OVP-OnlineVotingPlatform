@@ -1,0 +1,15 @@
+<%- include('topHTML.ejs') %>
+    <div class="wrapper">
+        <%- include('navbar.ejs') %>
+        <div class="bg-gray-50 dark:bg-gray-900 flex flex-col px-10 py-8 mx-auto md:h-screen lg:py-0 wrapper-element w-full ">
+            <div class="px-10 py-10">
+                <h1 class="text-white text-4xl font-semibold inline"><%= electionDetail.name %> - Questions</h1>
+            </div>
+            <div class="text-white px-10 py-3">
+                <p class="font-semibold pb-3">You haven't added any questions yet!</p>
+                <a href="/new-question/<%=electionDetail.id%>" class="font-medium text-purple-400 hover:text-purple-500 ">Create a question</a>
+                </div>
+            </div>
+        </div>
+    </div>
+<%- include('bottomHTML.ejs') %>
