@@ -5,7 +5,7 @@ const bodyParser = require("body-parser")
 const session = require("express-session")
 
 //Fetching the schemas from DB
-const {Users, election, electionQuestions, electionOptions} = require("./models")
+const {Users, election, electionQuestions, electionOptions, voterStatus} = require("./models")
 
 //For authentication.
 const passport = require("passport")
@@ -449,12 +449,27 @@ app.put('/update-option/:id', connectEnsureLogin.ensureLoggedIn(), async (req, r
 })
 
 //Get route to register voters.
-app.get('/register-voters', connectEnsureLogin.ensureLoggedIn(), (req, res)=>{
+app.get('/register-voters/:id', connectEnsureLogin.ensureLoggedIn(), (req, res)=>{
   res.render('registerVoters',{
     data: 'Register Voter',
     logout: "Sign out",
     title: "Register Voter",
+    id: req.params.id
   })
+})
+
+//Post route to add the voters.
+app.post('/register-voters/:id', connectEnsureLogin.ensureLoggedIn(), async (req, res)=> {
+  try {
+      await voterStatus.addVoter({
+      id: req.body.id,
+      password: req.body.password,
+      eId: req.params.id
+    })
+    res.redirect('/register-voters/'+req.params.id)
+  }catch(err){
+    console.log(err)
+  }
 })
 
 //Exporting the app here so that it can be imported from index and rendered through it.

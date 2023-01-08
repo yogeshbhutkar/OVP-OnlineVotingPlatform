@@ -10,11 +10,25 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
+      voterStatus.belongsTo(models.election, {
+        foreignKey: "eId",
+      });
       // define association here
+    }
+    static addVoter({ id, password, eId}) {
+      return this.create({
+        id,
+        role:"voter",
+        password,
+        status:"false",
+        eId
+      });
     }
   }
   voterStatus.init({
-    Vid: DataTypes.STRING,
+    id: {type:DataTypes.STRING,
+      primaryKey: true
+    },
     role: DataTypes.STRING,
     password: DataTypes.STRING,
     status: DataTypes.BOOLEAN
