@@ -1,11 +1,15 @@
 const express = require('express')
 const app = express()
+var cookieParser = require("cookie-parser");
 const path = require("path")
 const bodyParser = require("body-parser")
 const session = require("express-session")
 const flash = require("connect-flash");
 //Fetching the schemas from DB
 const {Users, election, electionQuestions, electionOptions, voterStatus} = require("./models")
+
+//For additional security.
+var csrf = require("tiny-csrf");
 
 //For authentication.
 const passport = require("passport")
@@ -21,9 +25,8 @@ const bcrypt = require("bcrypt");
 //To be later used in bcrypt.
 const saltRounds = 10
 
-app.use(bodyParser.json())
-
 app.use(express.urlencoded({ extended: false }))
+app.use(cookieParser("some-secret-key"));
 app.use(
     session({
       secret: "secret-key-123123123123",
@@ -32,6 +35,8 @@ app.use(
       },
     })
 )
+app.use(bodyParser.json())
+app.use(csrf("this_should_be_32_character_long", ["POST", "PUT", "DELETE"]));
 app.use(flash())
 app.use(function (req, res, next) {
   res.locals.messages = req.flash();
@@ -90,7 +95,8 @@ app.get('/', (req, res) => {
   res.render('index', {
     data: "",
     logout: "",
-    title: "OVP - An Online Voting Platform"
+    title: "OVP - An Online Voting Platform",
+    csrfToken: req.csrfToken(),
   })
 })
 
@@ -99,7 +105,8 @@ app.get('/login', (req, res)=> {
     res.render('login', {
         data:"Sign in",
         logout: "",
-        title: "Sign in"
+        title: "Sign in",
+        csrfToken: req.csrfToken(),
     })
 })
 
@@ -108,7 +115,8 @@ app.get('/signup', (req, res)=>{
     res.render('signup', {
         data:"Sign up",
         logout:"",
-        title: "Sign up"
+        title: "Sign up",
+        csrfToken: req.csrfToken(),
     })
 })
 
@@ -195,6 +203,7 @@ app.get('/dashboard', connectEnsureLogin.ensureLoggedIn(), async (req, res)=>{
         title: "Dashboard",
         username: username,
         elections: elections,
+        csrfToken: req.csrfToken(),
     })
 })
 
@@ -203,7 +212,8 @@ app.get('/create-election', connectEnsureLogin.ensureLoggedIn(), (req, res)=>{
     res.render('createElection',{
         data: 'Create an Election',
         logout: "Sign out",
-        title: "Create Election"
+        title: "Create Election",
+        csrfToken: req.csrfToken(),
     })
 })
 
@@ -251,7 +261,8 @@ app.get('/handle-election/:id',  connectEnsureLogin.ensureLoggedIn(), async (req
     title: "Handle Election",
     electionDetail: electionDetail,
     questions: questions,
-    voters:voters
+    voters:voters,
+    csrfToken: req.csrfToken(),
   })
 })
 
@@ -262,7 +273,8 @@ app.get('/edit-election-title/:id', connectEnsureLogin.ensureLoggedIn(), async (
     data: 'Handle Election',
     logout: "Sign out",
     title: "Handle Election",
-    element:element
+    element:element,
+    csrfToken: req.csrfToken(),
   })
 })
 
@@ -316,7 +328,8 @@ app.get('/manage-questions/:id', connectEnsureLogin.ensureLoggedIn(), async(req,
     title: "Manage Questions",
     electionDetail: electionDetail,
     questions: questions,
-    option: option
+    option: option,
+    csrfToken: req.csrfToken(),
   })
 })
 
@@ -331,7 +344,8 @@ app.get('/create-question/:id',connectEnsureLogin.ensureLoggedIn(), async(req, r
     data: 'Manage Questions',
     logout: "Sign out",
     title: "Manage Questions",
-    electionDetail: electionDetail
+    electionDetail: electionDetail,
+    csrfToken: req.csrfToken(),
   })
 })
 
@@ -348,6 +362,7 @@ app.get('/new-question/:id',connectEnsureLogin.ensureLoggedIn(), async (req, res
     logout: "Sign out",
     title: "Create New Question",
     electionDetail: electionDetail,
+    csrfToken: req.csrfToken(),
   }
   );
 })
@@ -384,7 +399,8 @@ app.get('/add-options/:id', connectEnsureLogin.ensureLoggedIn(), async (req, res
     logout: "Sign out",
     title: "Add options",
     question,
-    options
+    options,
+    csrfToken: req.csrfToken(),
   })
 })
 
@@ -411,7 +427,8 @@ app.get('/update-question/:id', connectEnsureLogin.ensureLoggedIn(), async (req,
     data: 'Update Question',
     logout: "Sign out",
     title: "Update Question",
-    question
+    question,
+    csrfToken: req.csrfToken(),
   })
 })
 
@@ -465,7 +482,8 @@ app.get('/update-option/:id', connectEnsureLogin.ensureLoggedIn(), async (req, r
     logout: "Sign out",
     title: "Update options",
     option,
-    question
+    question,
+    csrfToken: req.csrfToken(),
   })
 })
 
@@ -486,7 +504,8 @@ app.get('/register-voters/:id', connectEnsureLogin.ensureLoggedIn(), (req, res)=
     data: 'Register Voter',
     logout: "Sign out",
     title: "Register Voter",
-    id: req.params.id
+    id: req.params.id,
+    csrfToken: req.csrfToken(),
   })
 })
 
@@ -532,6 +551,7 @@ app.get('/launch-election/:id', connectEnsureLogin.ensureLoggedIn(), async (req,
     electionDetail,
     questions,
     option,
+    csrfToken: req.csrfToken(),
   })
 })
 
@@ -551,7 +571,8 @@ app.get('/live-election/:id', connectEnsureLogin.ensureLoggedIn(), async(req, re
     id: req.params.id,
     electionDetail,
     questions,
-    voters
+    voters,
+    csrfToken: req.csrfToken(),
   })
 })
 

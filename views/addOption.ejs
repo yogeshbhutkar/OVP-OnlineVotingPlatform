@@ -19,6 +19,7 @@
                     <% } %> 
                 <% } %> 
                 <form action="/add-option-to-db/<%=question.id%>" method="post" class="pt-7">
+                    <input type="hidden" name="_csrf" value="<%=csrfToken%>">
                     <input type="text" name="option" id="option" class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block set-width p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 inline" placeholder="An option goes here." required="">
 
                     <button type="submit" class="text-white bg-purple-700 hover:bg-purple-800 font-medium rounded px-5 py-2  inline-block ml-5">Add option</button>
