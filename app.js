@@ -198,7 +198,7 @@ app.post('/dbElectionCreate', connectEnsureLogin.ensureLoggedIn(), async (req, r
     try{
         await election.addElection({
             name: req.body.electionName,
-            url : '/'+req.body.electionName+'/',
+            url : '/'+req.body.electionURL+'/',
             userId : req.user.id,
         })
         res.redirect('/dashboard')
@@ -512,6 +512,7 @@ app.get('/live-election/:id', connectEnsureLogin.ensureLoggedIn(), async(req, re
     data: 'Live Election',
     logout: "Sign out",
     title: "Live Election",
+    id: req.params.id
   })
 })
 

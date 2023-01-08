@@ -1,9 +1,36 @@
 <%- include('topHTML.ejs') %>
     <div class="wrapper ">
         <%- include('navbar.ejs') %>
-        <div class="bg-gray-50 dark:bg-gray-900 flex flex-col px-10 py-8 mx-auto md:h-screen lg:py-0 wrapper-element w-full vertical-scroll">
-            <div class="px-10 py-10 flow-root">
-                <h1 class="text-white text-4xl font-semibold inline float-left">Election is live!</h1>
+        <div class="bg-gray-50 dark:bg-gray-900 flex flex-col px-10 py-8 mx-auto md:h-screen lg:py-0 wrapper-element w-full vertical-scroll text-center items-center justify-center">
+            <div class="px-10 py-10 w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700 align-middle">
+                <div class="py-7">
+                    <h1 class="text-white text-4xl font-semibold inline ">Election is live!</h1>
+                    <p class="text-white font-semibold text-xl pt-10">Vote using this url: </p>
+                    <a href="#" class="text-white font-semibold pt-1">some url</a>
+                    <div class="pt-5 pb-5">
+                        <p class="text-white font-semibold pt-1">
+                            Ballot contains 0 questions.
+                        </p>
+                        <p class="text-white font-semibold pt-1">
+                            This election has 0 added voters.
+                        </p>
+                        <a href="/handle-election/<%=id%>" class="text-purple-400 font-semibold pt-1">
+                            Manage Voters
+                        </a>
+                    </div>
+                    <div class="pt-5">
+                        <a href="#_" class="relative inline-flex items-center justify-center p-4 px-5 py-3 overflow-hidden font-medium text-indigo-600 transition duration-300 ease-out rounded-full shadow-xl group hover:ring-1 hover:ring-purple-500">
+                            <span class="absolute inset-0 w-full h-full bg-gradient-to-br from-blue-600 via-purple-600 to-pink-700"></span>
+                            <span class="absolute bottom-0 right-0 block w-64 h-64 mb-32 mr-4 transition duration-500 origin-bottom-left transform rotate-45 translate-x-24 bg-pink-500 rounded-full opacity-30 group-hover:rotate-90 ease"></span>
+                            <span class="relative text-white">Preview Results</span>
+                            </a>
+                            <a href="#_" class="ml-5 relative inline-flex items-center justify-center p-4 px-5 py-3 overflow-hidden font-medium text-indigo-600 transition duration-300 ease-out rounded-full shadow-xl group hover:ring-1 hover:ring-purple-500">
+                                <span class="absolute inset-0 w-full h-full bg-gradient-to-br from-blue-600 via-purple-600 to-pink-700"></span>
+                                <span class="absolute bottom-0 right-0 block w-64 h-64 mb-32 mr-4 transition duration-500 origin-bottom-left transform rotate-45 translate-x-24 bg-pink-500 rounded-full opacity-30 group-hover:rotate-90 ease"></span>
+                                <span class="relative text-white">End Election</span>
+                            </a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
