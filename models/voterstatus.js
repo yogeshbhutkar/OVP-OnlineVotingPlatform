@@ -15,6 +15,23 @@ module.exports = (sequelize, DataTypes) => {
       });
       // define association here
     }
+
+    static async removeVoters(id) {
+      return this.destroy({
+        where: {
+          id,
+        },
+      });
+    }
+
+    static getAllVoters(eId){
+      return this.findAll({
+        where: {
+          eId,
+        }
+      })
+    }
+
     static addVoter({ id, password, eId}) {
       return this.create({
         id,

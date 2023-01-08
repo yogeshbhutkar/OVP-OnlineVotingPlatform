@@ -18,6 +18,7 @@ const connectEnsureLogin = require("connect-ensure-login")
 
 //For hashing the passwords
 const bcrypt = require("bcrypt");
+const voterstatus = require('./models/voterstatus')
 //To be later used in bcrypt.
 const saltRounds = 10;
 
@@ -214,12 +215,14 @@ app.get('/handle-election/:id',  connectEnsureLogin.ensureLoggedIn(), async (req
     }
   })
   const questions = await electionQuestions.getElectionQuestions(electionDetail.id)
+  const voters = await voterStatus.getAllVoters(electionDetail.id)
   res.render('handleElection', {
     data: 'Handle Election',
     logout: "Sign out",
     title: "Handle Election",
     electionDetail: electionDetail,
-    questions: questions
+    questions: questions,
+    voters:voters
   })
 })
 
@@ -466,10 +469,50 @@ app.post('/register-voters/:id', connectEnsureLogin.ensureLoggedIn(), async (req
       password: req.body.password,
       eId: req.params.id
     })
-    res.redirect('/register-voters/'+req.params.id)
+    res.redirect('/handle-election/'+req.params.id)
   }catch(err){
     console.log(err)
   }
+})
+
+//Route to go to preview ballot page.
+app.get('/launch-election/:id', connectEnsureLogin.ensureLoggedIn(), async (req, res)=> {
+  const electionDetail = await election.findOne({
+    where: {
+      id:  req.params.id,
+    }
+  })
+  const questions = await electionQuestions.getElectionQuestions(electionDetail.id)
+  var option = [];
+  for (var i=0; i<questions.length; i++){
+    const options = await electionOptions.getOptions(questions[i].id)
+    for (var j=0; j<options.length; j++){
+      const item = {
+        name: options[j].option,
+        id: options[j].questionId,
+        optionId: options[j].id
+      }
+      option.push(item)
+    }
+  }
+  res.render('launchElection',
+  {
+    data: 'Launch Election',
+    logout: "Sign out",
+    title: "Launch Election",
+    electionDetail,
+    questions,
+    option,
+  })
+})
+
+//Route to go to launched live state of the election.
+app.get('/live-election/:id', connectEnsureLogin.ensureLoggedIn(), async(req, res)=>{
+  res.render('liveElection', {
+    data: 'Live Election',
+    logout: "Sign out",
+    title: "Live Election",
+  })
 })
 
 //Exporting the app here so that it can be imported from index and rendered through it.

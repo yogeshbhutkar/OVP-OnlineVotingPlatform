@@ -9,13 +9,23 @@
             <div class="text-white px-10 py-3">
                 <p class="font-semibold pb-3">Your election has <%=questions.length%> questions in the ballot.</p>
                 <a href="/manage-questions/<%= electionDetail.id %>" class="font-medium text-purple-400 hover:text-purple-500 ">Manage Questions</a>
-                <p class="font-semibold pt-3">Your election has 0 registered voters.</p>
+                <p class="font-semibold pt-3">Your election has <%=voters.length%> registered voters.</p>
                 <div class="pt-3">
                     <a href="/register-voters/<%= electionDetail.id %>" class="font-medium text-purple-400 hover:text-purple-500 block">Add Voters</a>
-                    <p class="pt-2"><a href="#" class="font-medium text-purple-400 hover:text-purple-500">Launch election</a></p>
+                    <p class="pt-2"><a href="/launch-election/<%=electionDetail.id%>" class="font-medium text-purple-400 hover:text-purple-500">Launch election</a></p>
                 </div>
                 <div>
-                    <p class="font-medium text-white pt-10">Added voters</p>
+                    <%if (voters.length == 0) {%>
+                        <p class="font-semibold text-white text-xl pt-10">Add voters to see them here.</p>
+                    <%}%>
+                    <%if (voters.length != 0) {%>
+                        <p class="font-semibold text-white text-xl pt-10">Added voters</p>
+                        <% for(var i=0; i<voters.length; i++) { %>
+                            <div>
+                                <p class="font-medium text-white pt-2 inline"><%=voters[i].id%></p>
+                            </div>
+                        <% } %>
+                    <% } %>
                 </div>
             </div>
         </div>

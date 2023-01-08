@@ -1,0 +1,46 @@
+<%- include('topHTML.ejs') %>
+    <div class="wrapper ">
+        <%- include('navbar.ejs') %>
+        <div class="bg-gray-50 dark:bg-gray-900 flex flex-col px-10 py-8 mx-auto md:h-screen lg:py-0 wrapper-element w-full vertical-scroll">
+            <div class="px-10 py-10 flow-root">
+                <h1 class="text-white text-4xl font-semibold inline float-left"><%= electionDetail.name %> - Questions</h1>
+                <div class="float-right">
+                    <a href="/manage-questions/<%= electionDetail.id %>" class="text-purple-400 hover:text-purple-500 font-bold">Edit Election</a>
+                    <a href="/live-election/<%= electionDetail.id %>" class="text-white text-purple-400 font-bold pl-5 hover:text-purple-500">Launch Election</a>
+                </div>
+            </div>
+            <div class="text-white px-10 py-3 bg-gray-50 dark:bg-gray-900">
+                <p class="font-semibold pb-5 pt-10 text-3xl">Ballot preview</p>
+
+                <% if (questions.length == 0) { %>
+                    <p class="font-semibold py-3">You haven't added any questions yet, add questions to see them here.!</p>
+                <% } %>
+                <% if (questions.length != 0) { %>
+                    <% for (var i=0; i<questions.length; i++) { %>
+                        <div class="">
+                            <p class="font-semibold text-2xl inline">Question #<%= i+1 %></p>
+                            
+                        </div>
+                        <p class="font-semibold text-xl pt-2"><%= questions[i].question %></p>
+                        <p class="font-semibold pb-2 pt-1 text-xl"><%= questions[i].description %></p>
+
+                        <div>
+                            <p class="font-semibold text-2xl inline">Options</p> 
+                        </div>
+                        <% for (var j=0; j<option.length; j++) { %>
+                            <% if (option[j].id === questions[i].id) {%>
+                                <div class="pt-2">
+                                    <input type="radio" disabled>
+                                    <p class="font-semibold text-xl inline-block pr-3"><%= option[j].name %></p>
+                                    
+                                </div>
+                            <% } %> 
+                        <% } %> 
+                        <div class="pb-10"></div>  
+                    <% } %>
+                <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+<%- include('bottomHTML.ejs') %>
