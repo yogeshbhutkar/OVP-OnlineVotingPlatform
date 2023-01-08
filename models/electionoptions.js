@@ -20,12 +20,24 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
     }
 
+    static async removeOption(id) {
+      return this.destroy({
+        where: {
+          id,
+        },
+      });
+    }
+
     static getOptions(questionId){
       return this.findAll({
         where: {
           questionId,
         }
       })
+    }
+
+    setOption(option){
+      return this.update({option})
     }
 
     static addOptions({ option, questionId }) {

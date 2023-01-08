@@ -270,7 +270,8 @@ app.get('/manage-questions/:id', connectEnsureLogin.ensureLoggedIn(), async(req,
     for (var j=0; j<options.length; j++){
       const item = {
         name: options[j].option,
-        id: options[j].questionId
+        id: options[j].questionId,
+        optionId: options[j].id
       }
       option.push(item)
     }
@@ -375,10 +376,84 @@ app.get('/update-question/:id', connectEnsureLogin.ensureLoggedIn(), async (req,
     }
   })
   res.render('updateQuestion', {
-    data: 'Add options',
+    data: 'Update Question',
     logout: "Sign out",
-    title: "Add options",
+    title: "Update Question",
     question
+  })
+})
+
+//Put route to handle update question request.
+app.put('/update-question/:id',  connectEnsureLogin.ensureLoggedIn(), async (req, res)=> {
+  try {
+    const question = await electionQuestions.findByPk(req.params.id)
+    const update = await question.setQuestionAndDescription(req.body.question, req.body.description)
+    return res.json(update)
+  }catch(err){
+    console.log(err)
+    return res.status(422).json(err)
+  }
+})
+
+//Route to handle delete question request.
+app.delete('/delete-question/:id', connectEnsureLogin.ensureLoggedIn(), async (req, res)=> {
+  try {
+    await electionQuestions.removeQuestion(req.params.id)
+    return res.json({ success: true })
+  }catch(err){
+    console.log(err)
+    return res.status(422).json(err)
+  }
+})
+
+//Route to handle delete option request.
+app.delete('/delete-option/:id', connectEnsureLogin.ensureLoggedIn(), async (req, res)=> {
+  const option = await electionOptions.findByPk(req.params.id)
+  console.log(option)
+  console.log(req.params.id)
+  try {
+    await electionOptions.removeOption(req.params.id)
+    return res.json({ success: true })
+  }catch(err){
+    console.log(err)
+    return res.status(422).json(err)
+  }
+})
+
+//Route to update options.
+app.get('/update-option/:id', connectEnsureLogin.ensureLoggedIn(), async (req, res)=> {
+  const option = await electionOptions.findByPk(req.params.id)
+  const question = await electionQuestions.findOne({
+    where:{
+      id: option.questionId
+    }
+  })
+  res.render('updateOption', {
+    data: 'Update options',
+    logout: "Sign out",
+    title: "Update options",
+    option,
+    question
+  })
+})
+
+//Put Route to handle updation of an option
+app.put('/update-option/:id', connectEnsureLogin.ensureLoggedIn(), async (req, res) =>  {
+  try{
+    const option = await electionOptions.findByPk(req.params.id)
+    option.setOption(req.body.option)
+  }catch(err){
+    console.log(err)
+  }
+  
+})
+
+//Get route to register voters.
+app.get('/register-voters', connectEnsureLogin.ensureLoggedIn(), (req, res)=>{
+  res.render('registerVoters',{
+    data: 'Register Voter',
+    logout: "Sign out",
+    title: "Register Voter",
   })
 })
 

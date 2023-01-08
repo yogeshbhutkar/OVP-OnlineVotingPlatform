@@ -21,6 +21,72 @@
 
     <!-- Other JS scripts -->
     <script>
+
+        function deleteOption(id){
+            fetch(`/delete-option/${id}`, {
+                method: "delete",
+                headers: {"Content-Type": "application/json"},
+            })
+                .then((res)=>{
+                    if (res.ok){
+                        window.location.reload();
+                    }
+                })
+                    .catch((err)=>{
+                        console.error(err);
+                    })
+        }
+
+        function updateOption(id, electionId){
+            fetch(`/update-option/${id}`, {
+                method: "put",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    "option":document.getElementById('option').value,
+                })
+            })
+                .then((res)=>{
+                    if (res.ok){
+                        window.location.href="/manage-questions/"+electionId;
+                    }
+                })
+                    .catch((err)=>{
+                        console.error(err);
+                    })
+        }
+
+        function deleteQuestion(id){
+            fetch(`/delete-question/${id}`, {
+                method: "delete",
+                headers: {"Content-Type": "application/json"},
+            })
+                .then((res)=>{
+                    if (res.ok){
+                        window.location.reload();
+                    }
+                })
+                    .catch((err)=>{
+                        console.error(err);
+                    })
+        }
+
+        function updateQuestion(id, electionId){
+            fetch(`/update-question/${id}`, {
+                method: "put",
+                headers: { "Content-Type": "application/json"},
+                body: JSON.stringify({
+                    "question":document.getElementById('question').value,
+                    "description": document.getElementById('description').value
+                })
+            })
+                .then((res)=>{
+                    if (res.ok) {
+                        window.location.href = `/manage-questions/${electionId}`;
+                    }
+                })
+                    .catch((err)=> console.error(error));
+        }
+
         function deleteElection(id){
             fetch(`/delete-election/${id}`, {
                 method: "delete",
@@ -36,7 +102,6 @@
                     })
         }
         function updateElection(id){
-            console.log(document.getElementById('title').value)
             fetch(`/edit-title/${id}`, {
                 method: "put",
                 headers: { "Content-Type": "application/json"},

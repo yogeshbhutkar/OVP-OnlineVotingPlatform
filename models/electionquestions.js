@@ -27,6 +27,14 @@ module.exports = (sequelize, DataTypes) => {
       });
     }
 
+    static async removeQuestion(id) {
+      return this.destroy({
+        where: {
+          id,
+        },
+      });
+    }
+
     static getElectionQuestions(electionId){
       return this.findAll({
         where: {
@@ -34,11 +42,17 @@ module.exports = (sequelize, DataTypes) => {
         }
       })
     }
+    setQuestionAndDescription(question, description){
+      return this.update({
+        question,
+        description
+      })
+    }
+  
 
   }
 
-  
-
+ 
   electionQuestions.init({
     question: DataTypes.STRING,
     description: DataTypes.STRING

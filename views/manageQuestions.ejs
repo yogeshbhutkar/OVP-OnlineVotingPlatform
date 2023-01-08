@@ -19,19 +19,22 @@
                         <div class="">
                             <p class="font-semibold text-2xl inline">Question #<%= i+1 %></p>
                             <a href="/update-question/<%=questions[i].id%>" class="pl-10 hover:text-purple-400"><i class="fa-solid fa-pen-to-square"></i></a>
-                            <a href="/update-question/<%=questions[i].id%>" class="pl-3 hover:text-purple-400"><i class="fa-solid fa-trash"></i></a>
+                            <button onclick="deleteQuestion(<%=questions[i].id%>)" class="pl-3 hover:text-purple-400"><i class="fa-solid fa-trash"></i></button>
                         </div>
                         <p class="font-semibold text-xl pt-2"><%= questions[i].question %></p>
                         <p class="font-semibold pb-2 pt-1 text-xl"><%= questions[i].description %></p>
 
-                        <p class="font-semibold text-2xl">Options</p>  
+                        <div>
+                            <p class="font-semibold text-2xl inline">Options</p>
+                            <a href="/add-options/<%= questions[i].id %> " class="font-semibold text-xl pl-5 text-purple-500">Add options</a>  
+                        </div>
                         <% for (var j=0; j<option.length; j++) { %>
                             <% if (option[j].id === questions[i].id) {%>
                                 <div class="pt-2">
                                     <input type="radio" disabled>
                                     <p class="font-semibold text-xl inline-block pr-3"><%= option[j].name %></p>
-                                    <a href="" class="pl-10 hover:text-purple-400"><i class="fa-solid fa-pen-to-square"></i></a>
-                                    <a href="" class="pl-3 hover:text-purple-400"><i class="fa-solid fa-trash"></i></a>
+                                    <a href="/update-option/<%= option[j].optionId %>" class="pl-10 hover:text-purple-400"><i class="fa-solid fa-pen-to-square"></i></a>
+                                    <button onclick="deleteOption(<%=option[j].optionId%>)" class="pl-3 hover:text-purple-400"><i class="fa-solid fa-trash"></i></button>
                                 </div>
                             <% } %> 
                         <% } %> 
