@@ -513,9 +513,10 @@ app.get('/register-voters/:id', connectEnsureLogin.ensureLoggedIn(), (req, res)=
 
 //Post route to add the voters.
 app.post('/register-voters/:id', connectEnsureLogin.ensureLoggedIn(), async (req, res)=> {
+  console.log(req.params.id)
   try {
       await voterStatus.addVoter({
-      id: req.body.id,
+      voterDetails: req.body.voterDetail,
       password: req.body.password,
       eId: req.params.id
     })

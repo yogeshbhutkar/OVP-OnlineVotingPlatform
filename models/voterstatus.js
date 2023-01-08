@@ -15,7 +15,6 @@ module.exports = (sequelize, DataTypes) => {
       });
       // define association here
     }
-
     static async removeVoters(id) {
       return this.destroy({
         where: {
@@ -32,9 +31,9 @@ module.exports = (sequelize, DataTypes) => {
       })
     }
 
-    static addVoter({ id, password, eId}) {
+    static addVoter({ voterDetails, password, eId}) {
       return this.create({
-        id,
+        voterDetails,
         role:"voter",
         password,
         status:"false",
@@ -43,9 +42,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   voterStatus.init({
-    id: {type:DataTypes.STRING,
-      primaryKey: true
-    },
+    voterDetails: DataTypes.STRING,
     role: DataTypes.STRING,
     password: DataTypes.STRING,
     status: DataTypes.BOOLEAN
