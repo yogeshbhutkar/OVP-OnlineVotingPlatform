@@ -363,8 +363,23 @@ app.post('/add-option-to-db/:id', connectEnsureLogin.ensureLoggedIn(), async (re
     })
     res.redirect('/add-options/'+option.questionId)
   }catch(err){
-    console.log(err);
+    console.log(err)
   }
+})
+
+//Route for updating the question.
+app.get('/update-question/:id', connectEnsureLogin.ensureLoggedIn(), async (req, res)=> {
+  const question = await electionQuestions.findOne({
+    where: {
+      id:req.params.id
+    }
+  })
+  res.render('updateQuestion', {
+    data: 'Add options',
+    logout: "Sign out",
+    title: "Add options",
+    question
+  })
 })
 
 //Exporting the app here so that it can be imported from index and rendered through it.

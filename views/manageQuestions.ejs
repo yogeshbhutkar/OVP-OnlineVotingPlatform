@@ -1,7 +1,7 @@
 <%- include('topHTML.ejs') %>
     <div class="wrapper ">
         <%- include('navbar.ejs') %>
-        <div class="bg-gray-50 dark:bg-gray-900 flex flex-col px-10 py-8 mx-auto md:h-screen lg:py-0 wrapper-element w-full ">
+        <div class="bg-gray-50 dark:bg-gray-900 flex flex-col px-10 py-8 mx-auto md:h-screen lg:py-0 wrapper-element w-full vertical-scroll">
             <div class="px-10 py-10">
                 <h1 class="text-white text-4xl font-semibold inline"><%= electionDetail.name %> - Questions</h1>
             </div>
@@ -18,8 +18,8 @@
                     <% for (var i=0; i<questions.length; i++) { %>
                         <div class="">
                             <p class="font-semibold text-2xl inline">Question #<%= i+1 %></p>
-                            <a href="" class="pl-10 hover:text-purple-400"><i class="fa-solid fa-pen-to-square"></i></a>
-                            <a href="" class="pl-3 hover:text-purple-400"><i class="fa-solid fa-trash"></i></a>
+                            <a href="/update-question/<%=questions[i].id%>" class="pl-10 hover:text-purple-400"><i class="fa-solid fa-pen-to-square"></i></a>
+                            <a href="/update-question/<%=questions[i].id%>" class="pl-3 hover:text-purple-400"><i class="fa-solid fa-trash"></i></a>
                         </div>
                         <p class="font-semibold text-xl pt-2"><%= questions[i].question %></p>
                         <p class="font-semibold pb-2 pt-1 text-xl"><%= questions[i].description %></p>

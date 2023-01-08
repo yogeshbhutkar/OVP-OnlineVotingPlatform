@@ -1,0 +1,24 @@
+<%- include('topHTML.ejs') %>
+    <div class="wrapper">
+        <%- include('navbar.ejs') %>
+        <div class="bg-gray-50 dark:bg-gray-900 flex flex-col px-10 py-8 mx-auto md:h-screen lg:py-0 wrapper-element w-full ">
+            <div class="px-10 py-10">
+                <div class="pb-4">
+                    <h1 class="text-white text-xl font-semibold inline">Update question</h1>
+                </div>
+                <form>
+                    <div>
+                        <label for="question" class="text-white">Question</label>
+                        <input type="text" name="question" id="question" class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="<%=question.question%>">
+                        <button class="text-white bg-purple-700 px-4 py-2 rounded-lg hover:bg-purple-800 mt-5 block" onclick="">Update Question</button>
+                    </div>              
+                    <div class="pt-10">
+                        <label for="description" class="text-white">Description</label>
+                        <input type="text" name="description" id="description" class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="<%=question.description%>">
+                        <button class="text-white bg-purple-700 px-4 py-2 rounded-lg hover:bg-purple-800 mt-5" onclick="">Update Description</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+<%- include('bottomHTML.ejs') %>
