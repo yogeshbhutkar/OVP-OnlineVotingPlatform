@@ -3,7 +3,7 @@ const app = express()
 const path = require("path")
 const bodyParser = require("body-parser")
 const session = require("express-session")
-
+const flash = require("connect-flash");
 //Fetching the schemas from DB
 const {Users, election, electionQuestions, electionOptions, voterStatus} = require("./models")
 
@@ -18,11 +18,11 @@ const connectEnsureLogin = require("connect-ensure-login")
 
 //For hashing the passwords
 const bcrypt = require("bcrypt");
-const voterstatus = require('./models/voterstatus')
 //To be later used in bcrypt.
-const saltRounds = 10;
+const saltRounds = 10
 
 app.use(bodyParser.json())
+
 app.use(express.urlencoded({ extended: false }))
 app.use(
     session({
@@ -32,7 +32,11 @@ app.use(
       },
     })
 )
-
+app.use(flash())
+app.use(function (req, res, next) {
+  res.locals.messages = req.flash();
+  next();
+});
 //Specifying the usage of local strategy.
 
 app.use(passport.initialize());
@@ -112,6 +116,31 @@ app.get('/signup', (req, res)=>{
 app.post('/signup-post', async (req, res)=>{
     const hashedPwd = await bcrypt.hash(req.body.password, saltRounds)
     try{
+      if (req.body.firstName == "") {
+        req.flash("error", "please provide your firstname");
+        return res.redirect("/signup");
+      }
+      if (req.body.email == "") {
+        req.flash("error", "please provide your email");
+        return res.redirect("/signup");
+      }
+        if (req.body.password == "") {
+          req.flash("error", "please enter the password");
+          return res.redirect("/signup");
+        }
+        if (req.body.password.length < 8) {
+          req.flash("error", "password must contain atleast 8 characters.");
+          return res.redirect("/signup");
+        }
+        const emailExistsCheck = await Users.findOne({
+          where: {
+            email: req.body.email,
+          },
+        });
+        if (emailExistsCheck) {
+          req.flash("error", "Email already exists.");
+          return res.redirect("/signup");
+        }
         const user = await Users.create({
             firstName: req.body.firstName,
             lastName: req.body.lastName,
@@ -137,19 +166,19 @@ app.post('/signup-post', async (req, res)=>{
 app.post('/signin-post',
     passport.authenticate("local", {
         failureRedirect: "/login",
-        failureFlash: false,
+        failureFlash: true,
     }), 
     (req, res)=>{
         res.redirect('/dashboard')
 })
 
 //signing out the user.
-app.get("/signout", (request, response, next) => {
-    request.logout((err) => {
+app.get("/signout", (req, res, next) => {
+    req.logout((err) => {
       if (err) {
         return next(err);
       }
-      response.redirect("/");
+      res.redirect("/");
     });
   });
 
@@ -182,13 +211,13 @@ app.get('/create-election', connectEnsureLogin.ensureLoggedIn(), (req, res)=>{
 app.delete(
   "/delete-election/:id",
   connectEnsureLogin.ensureLoggedIn(),
-  async function (request, response) {
-    console.log("We have to delete a Todo with ID: ", request.params.id);
+  async function (req, res) {
+    console.log("We have to delete a Todo with ID: ", req.params.id);
     try {
-      await election.remove(request.params.id, request.user.id);
-      return response.json({ success: true });
+      await election.remove(req.params.id, req.user.id);
+      return res.json({ success: true });
     } catch (error) {
-      return response.status(422).json(error);
+      return res.status(422).json(error);
     }
   }
 )
@@ -198,7 +227,7 @@ app.post('/dbElectionCreate', connectEnsureLogin.ensureLoggedIn(), async (req, r
     try{
         await election.addElection({
             name: req.body.electionName,
-            url : '/'+req.body.electionURL+'/',
+            url : '/e/'+req.body.electionURL,
             userId : req.user.id,
         })
         res.redirect('/dashboard')
@@ -386,7 +415,7 @@ app.get('/update-question/:id', connectEnsureLogin.ensureLoggedIn(), async (req,
   })
 })
 
-//Put route to handle update question request.
+//Put route to handle update question req.
 app.put('/update-question/:id',  connectEnsureLogin.ensureLoggedIn(), async (req, res)=> {
   try {
     const question = await electionQuestions.findByPk(req.params.id)
@@ -398,7 +427,7 @@ app.put('/update-question/:id',  connectEnsureLogin.ensureLoggedIn(), async (req
   }
 })
 
-//Route to handle delete question request.
+//Route to handle delete question req.
 app.delete('/delete-question/:id', connectEnsureLogin.ensureLoggedIn(), async (req, res)=> {
   try {
     await electionQuestions.removeQuestion(req.params.id)
@@ -409,7 +438,7 @@ app.delete('/delete-question/:id', connectEnsureLogin.ensureLoggedIn(), async (r
   }
 })
 
-//Route to handle delete option request.
+//Route to handle delete option req.
 app.delete('/delete-option/:id', connectEnsureLogin.ensureLoggedIn(), async (req, res)=> {
   const option = await electionOptions.findByPk(req.params.id)
   console.log(option)
@@ -508,11 +537,21 @@ app.get('/launch-election/:id', connectEnsureLogin.ensureLoggedIn(), async (req,
 
 //Route to go to launched live state of the election.
 app.get('/live-election/:id', connectEnsureLogin.ensureLoggedIn(), async(req, res)=>{
+  const electionDetail = await election.findOne({
+    where: {
+      id:  req.params.id,
+    }
+  })
+  const questions = await electionQuestions.getElectionQuestions(electionDetail.id)
+  const voters = await voterStatus.getAllVoters(electionDetail.id)
   res.render('liveElection', {
     data: 'Live Election',
     logout: "Sign out",
     title: "Live Election",
-    id: req.params.id
+    id: req.params.id,
+    electionDetail,
+    questions,
+    voters
   })
 })
 

@@ -6,13 +6,13 @@
                 <div class="py-7">
                     <h1 class="text-white text-4xl font-semibold inline ">Election is live!</h1>
                     <p class="text-white font-semibold text-xl pt-10">Vote using this url: </p>
-                    <a href="#" class="text-white font-semibold pt-1">some url</a>
+                    <a href="#" class="text-white font-semibold pt-1"><%=electionDetail.url%></a>
                     <div class="pt-5 pb-5">
                         <p class="text-white font-semibold pt-1">
-                            Ballot contains 0 questions.
+                            Ballot contains <%=questions.length%> questions.
                         </p>
                         <p class="text-white font-semibold pt-1">
-                            This election has 0 added voters.
+                            This election has <%=voters.length%> added voters.
                         </p>
                         <a href="/handle-election/<%=id%>" class="text-purple-400 font-semibold pt-1">
                             Manage Voters
