@@ -49,6 +49,7 @@ app.use(function (req, res, next) {
 app.use(passport.initialize());
 app.use(passport.session());
 passport.use(
+    "local",
     new LocalStrategy(
       {
         usernameField: "email",
@@ -71,19 +72,55 @@ passport.use(
     )
   )
 
+  passport.use(
+    "local-voters",
+    new LocalStrategy(
+      {
+        usernameField: "username",
+        passwordField: "password",
+        passReqToCallback: true,
+      },
+      async (request, username, password, done) => {
+        const ele = await election.findOne({where: {url: '/e/'+request.params.url}})
+        voterStatus.findOne({ where: { voterDetails: username, eId: ele.id } })
+          .then(async (user) => {
+            const result = password==user.password?true:false
+            if (result) {
+              return done(null, user)
+            } else {
+              return done(null, false, { message: "Invalid password" })
+            }
+          })
+          .catch(function () {
+            return done(null, false, { message: "Invalid VoterID" })
+          })
+      }
+    )
+  )
+
   passport.serializeUser((user, done) => {
     console.log("Serializing user in session", user.id);
-    done(null, user.id);
+    done(null, {id: user.id, role: user.role?user.role:"admin"});
   });
   
   passport.deserializeUser((id, done) => {
-    Users.findByPk(id)
+    if (id.role === "admin"){
+      Users.findByPk(id.id)
       .then((user) => {
         done(null, user);
       })
       .catch((error) => {
         done(error, null);
       });
+    }else if (id.role === "voter"){
+      voterStatus.findByPk(id.id)
+      .then((user) => {
+        done(null, user);
+      })
+      .catch((error) => {
+        done(error, null);
+      });
+    }  
   });
 
 //Setting view engine as ejs to use ejs templates.
@@ -577,7 +614,6 @@ app.get('/launch-election/:id', connectEnsureLogin.ensureLoggedIn(), async (req,
       break
     }
   }
-  console.log(display)
   res.render('launchElection',
   {
     data: 'Launch Election',
@@ -617,8 +653,51 @@ app.get("/e/:url", async (req, res)=>{
     data: 'Voter Sign In',
     logout: "Sign out",
     title: "Voter Sign In",
+    url: req.params.url,
     csrfToken: req.csrfToken(),
   })
+})
+
+app.get('/vote/:url', async (req, res)=>{
+  const electionDetail = await election.findOne({
+    where: {
+      url:  '/e/'+req.params.url,
+    }
+  })
+  const questions = await electionQuestions.getElectionQuestions(electionDetail.id)
+  const voters = await voterStatus.getAllVoters(electionDetail.id)
+
+  var option = [];
+  for (var i=0; i<questions.length; i++){
+    const options = await electionOptions.getOptions(questions[i].id)
+    for (var j=0; j<options.length; j++){
+      const item = {
+        name: options[j].option,
+        id: options[j].questionId,
+        optionId: options[j].id
+      }
+      option.push(item)
+    }
+  }
+  res.render("vote", {
+    data: 'Vote',
+    logout: "Sign out",
+    title: "Caste your vote",
+    electionDetail: electionDetail,
+    questions: questions,
+    voters:voters,
+    option,
+    csrfToken: req.csrfToken(),
+  })
+})
+
+app.post('/signin-voters-post/:url',
+    passport.authenticate("local-voters", {
+      failureRedirect: 'back',
+        failureFlash: true,
+    }), 
+    (req, res)=>{
+        res.redirect('/vote/'+req.params.url)
 })
 
 //Exporting the app here so that it can be imported from index and rendered through it.

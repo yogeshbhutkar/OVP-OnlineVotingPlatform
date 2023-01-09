@@ -1,0 +1,46 @@
+<%- include('topHTML.ejs') %>
+    <div class="wrapper">
+        <%- include('navbar.ejs') %>
+        <div class="bg-gray-50 dark:bg-gray-900 flex flex-col px-10 py-8 mx-auto md:h-screen lg:py-0 wrapper-element w-full ">
+            <div class="text-white px-10 py-3 bg-gray-50 dark:bg-gray-900">
+                <p class="font-semibold pb-5 pt-10 text-3xl">Ballot</p>
+
+                <% if (questions.length == 0) { %>
+                    <p class="font-semibold py-3">You haven't added any questions yet, add questions to see them here.!</p>
+                <% } %>
+                <% if (questions.length != 0) { %>
+                    <% for (var i=0; i<questions.length; i++) { %>
+                        <div class="">
+                            <p class="font-semibold text-2xl inline">Question #<%= i+1 %></p>
+                            
+                        </div>
+                        <label for="<%= questions[i].id %>" class="font-semibold text-xl pt-2"><%= questions[i].question %></label>
+                        <p class="font-semibold pb-2 pt-1 text-xl"><%= questions[i].description %></p>
+
+                        <div>
+                            <p class="font-semibold text-2xl inline">Options</p> 
+                        </div>
+                        <% for (var j=0; j<option.length; j++) { %>
+                            <% if (option[j].id === questions[i].id) {%>
+                                <div class="pt-2">
+                                    <input type="radio" name="<%=questions[i].id%>" id="<%= questions[i].id %>">
+                                    <label  class="font-semibold text-xl inline-block pr-3"><%= option[j].name %></label>
+                                </div>
+                            <% } %> 
+                        <% } %> 
+                        <div class="pb-10">
+                            
+                        </div>  
+                    <% } %>
+                <% } %>
+                    <div>
+                        <button type="submit" class="relative inline-flex items-center justify-center p-4 px-5 py-3 overflow-hidden font-medium text-indigo-600 transition duration-300 ease-out rounded-full shadow-xl group hover:ring-1 hover:ring-purple-500">
+                            <span class="absolute inset-0 w-full h-full bg-gradient-to-br from-blue-600 via-purple-600 to-pink-700"></span>
+                            <span class="absolute bottom-0 right-0 block w-64 h-64 mb-32 mr-4 transition duration-500 origin-bottom-left transform rotate-45 translate-x-24 bg-pink-500 rounded-full opacity-30 group-hover:rotate-90 ease"></span>
+                            <span class="relative text-white">Submit</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+<%- include('bottomHTML.ejs') %>
