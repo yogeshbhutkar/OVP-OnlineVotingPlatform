@@ -584,6 +584,10 @@ app.get('/launch-election/:id', connectEnsureLogin.ensureLoggedIn(), async (req,
     }
   })
   const questions = await electionQuestions.getElectionQuestions(electionDetail.id)
+  let noQuestions = false
+  if (questions.length==0){
+    noQuestions = true
+  }
   var option = [];
   for (var i=0; i<questions.length; i++){
     const options = await electionOptions.getOptions(questions[i].id)
@@ -614,6 +618,11 @@ app.get('/launch-election/:id', connectEnsureLogin.ensureLoggedIn(), async (req,
       break
     }
   }
+  const voters = await voterStatus.getAllVoters(electionDetail.id)
+  let noVoters = false
+  if (voters.length==0){
+    noVoters = true
+  }
   res.render('launchElection',
   {
     data: 'Launch Election',
@@ -623,7 +632,9 @@ app.get('/launch-election/:id', connectEnsureLogin.ensureLoggedIn(), async (req,
     questions,
     option,
     csrfToken: req.csrfToken(),
-    display
+    display,
+    noQuestions,
+    noVoters,
   })
 })
 
@@ -700,7 +711,7 @@ app.post('/signin-voters-post/:url',
         res.redirect('/vote/'+req.params.url)
 })
 
-//Route to add the answers to the table.
+//Route to add the answers to the table. (still incomplete)
 app.post('/vote/add-answers', connectEnsureLogin.ensureLoggedIn(), async (req, res)=>{
   console.log("reached")
   console.log(req.body)

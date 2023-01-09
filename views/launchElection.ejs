@@ -6,7 +6,7 @@
                 <h1 class="text-white text-4xl font-semibold inline float-left"><%= electionDetail.name %> - Questions</h1>
                 <div class="float-right">
                     <a href="/manage-questions/<%= electionDetail.id %>" class="text-purple-400 hover:text-purple-500 font-bold">Edit Election</a>
-                    <% if (display) { %>
+                    <% if (display&&(!noQuestions)&&(!noVoters)) { %>
                         <a href="/live-election/<%= electionDetail.id %>" class="text-white text-purple-400 font-bold pl-5 hover:text-purple-500">Launch Election</a>
                     <%}%>
                 </div>
@@ -14,6 +14,12 @@
             <div class="text-white px-10 py-3 bg-gray-50 dark:bg-gray-900">
                 <% if (!display) { %>
                     <p class="text-white text-red-400 font-bold">Add atleast 2 options to every question to continue</p>
+                <%}%>
+                <% if (noQuestions) { %>
+                    <p class="text-white text-red-400 font-bold">Add atleast 1 question to continue</p>
+                <%}%>
+                <% if (noVoters) { %>
+                    <p class="text-white text-red-400 font-bold">Add atleast 1 voter to continue</p>
                 <%}%>
                 <p class="font-semibold pb-5 pt-10 text-3xl">Ballot preview</p>
 
