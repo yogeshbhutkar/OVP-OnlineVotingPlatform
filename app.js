@@ -22,7 +22,6 @@ const connectEnsureLogin = require("connect-ensure-login")
 
 //For hashing the passwords
 const bcrypt = require("bcrypt");
-const { count } = require('console');
 //To be later used in bcrypt.
 const saltRounds = 10
 
@@ -609,6 +608,15 @@ app.get('/live-election/:id', connectEnsureLogin.ensureLoggedIn(), async(req, re
     electionDetail,
     questions,
     voters,
+    csrfToken: req.csrfToken(),
+  })
+})
+
+app.get("/e/:url", async (req, res)=>{
+  res.render('voterSignIn', {
+    data: 'Voter Sign In',
+    logout: "Sign out",
+    title: "Voter Sign In",
     csrfToken: req.csrfToken(),
   })
 })
