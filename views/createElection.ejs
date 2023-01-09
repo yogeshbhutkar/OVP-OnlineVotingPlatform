@@ -12,6 +12,15 @@
                     <input type="text" name="electionURL" id="electionURL" class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Vote for the class monitor?">
                     <button type="submit" class="text-white bg-purple-700 px-4 py-2 rounded-lg hover:bg-purple-800 mt-5" >Submit</button>
                 </form>
+                <% if(messages && messages.error && messages.error.length > 0)  { %>
+                    <% for(var i=0; i<messages.error.length; i++) { %>
+                        <div class="pt-10">
+                            <div class="p-2 bg-red-500 text-white rounded flex w-fit items-center">
+                                <p class="py-2"> <%= messages.error[i] %></p>
+                            </div>
+                        </div>
+                    <% } %>
+                  <% } %>
             </div>
         </div>
     </div>

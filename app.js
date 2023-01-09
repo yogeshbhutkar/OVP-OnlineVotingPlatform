@@ -238,7 +238,18 @@ app.delete(
 //Route to add a new election to db.
 app.post('/dbElectionCreate', connectEnsureLogin.ensureLoggedIn(), async (req, res)=>{
     try{
-        if (req.body.electionURL)
+        if (req.body.electionName.length==0){
+          req.flash("error", "Please enter the election name")
+          return res.redirect("/create-election")
+        }
+        if (req.body.electionURL.length==0){
+          req.flash("error", "Please enter the election URL")
+          return res.redirect("/create-election")
+        }
+        if (req.body.electionURL.indexOf(' ')>=0){
+          req.flash("error", "URL cannot contain space")
+          return res.redirect("/create-election")
+        }
         await election.addElection({
             name: req.body.electionName,
             url : '/e/'+req.body.electionURL,
@@ -548,6 +559,7 @@ app.get('/launch-election/:id', connectEnsureLogin.ensureLoggedIn(), async (req,
       option.push(item)
     }
   }
+  console.log(option)
   res.render('launchElection',
   {
     data: 'Launch Election',
