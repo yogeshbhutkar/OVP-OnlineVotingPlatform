@@ -224,12 +224,13 @@ app.delete(
   "/delete-election/:id",
   connectEnsureLogin.ensureLoggedIn(),
   async function (req, res) {
-    console.log("We have to delete a Todo with ID: ", req.params.id);
+    console.log("We have to delete an election with ID: ", req.params.id)
     try {
-      await election.remove(req.params.id, req.user.id);
-      return res.json({ success: true });
+      let result = await election.remove(req.params.id, req.user.id)
+      console.log(result)
+      return res.json({ success: true })
     } catch (error) {
-      return res.status(422).json(error);
+      return res.status(422).json(error)
     }
   }
 )
@@ -237,6 +238,7 @@ app.delete(
 //Route to add a new election to db.
 app.post('/dbElectionCreate', connectEnsureLogin.ensureLoggedIn(), async (req, res)=>{
     try{
+        if (req.body.electionURL)
         await election.addElection({
             name: req.body.electionName,
             url : '/e/'+req.body.electionURL,

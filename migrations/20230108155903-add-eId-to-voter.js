@@ -9,6 +9,7 @@ module.exports = {
     await queryInterface.addConstraint("voterStatuses", {
       fields: ["eId"],
       type: "foreign key",
+      onDelete: "CASCADE",
       references: {
         table: "elections",
         field: "id",

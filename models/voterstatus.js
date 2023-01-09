@@ -26,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
     static getAllVoters(eId){
       return this.findAll({
         where: {
-          eId,
+          eId:eId,
         }
       })
     }

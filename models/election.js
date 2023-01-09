@@ -17,8 +17,13 @@ module.exports = (sequelize, DataTypes) => {
 
       election.hasMany(models.electionQuestions, {
         foreignKey: "electionId",
+        onDelete: "CASCADE",
       });
 
+      election.hasMany(models.voterStatus, {
+        foreignKey: "eId",
+        onDelete: "CASCADE",
+      });
     }
 
     static getElections(userId){
