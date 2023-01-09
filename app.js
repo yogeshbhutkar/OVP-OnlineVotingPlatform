@@ -602,7 +602,7 @@ app.get('/launch-election/:id', connectEnsureLogin.ensureLoggedIn(), async (req,
   }
 
   //To check if there are at-least 2 options for every question.
-  display = true
+  display = false
   const idArray = []
   for (let i=0; i<option.length; i++){
     idArray.push(option[i].id)
@@ -616,6 +616,8 @@ app.get('/launch-election/:id', connectEnsureLogin.ensureLoggedIn(), async (req,
     if (counts[idKeys[i]]<2){
       display = false
       break
+    }else{
+      display = true
     }
   }
   const voters = await voterStatus.getAllVoters(electionDetail.id)
