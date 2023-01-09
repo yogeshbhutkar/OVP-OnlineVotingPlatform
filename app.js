@@ -22,6 +22,7 @@ const connectEnsureLogin = require("connect-ensure-login")
 
 //For hashing the passwords
 const bcrypt = require("bcrypt");
+const { count } = require('console');
 //To be later used in bcrypt.
 const saltRounds = 10
 
@@ -559,7 +560,25 @@ app.get('/launch-election/:id', connectEnsureLogin.ensureLoggedIn(), async (req,
       option.push(item)
     }
   }
-  console.log(option)
+
+  //To check if there are at-least 2 options for every question.
+  display = true
+  const idArray = []
+  for (let i=0; i<option.length; i++){
+    idArray.push(option[i].id)
+  }
+  const counts={}
+  for (const num of idArray) {
+    counts[num] = counts[num] ? counts[num] + 1 : 1;
+  }
+  const idKeys = Object.keys(counts)
+  for (let i=0; i<idKeys.length; i++){
+    if (counts[idKeys[i]]<2){
+      display = false
+      break
+    }
+  }
+  console.log(display)
   res.render('launchElection',
   {
     data: 'Launch Election',
@@ -569,6 +588,7 @@ app.get('/launch-election/:id', connectEnsureLogin.ensureLoggedIn(), async (req,
     questions,
     option,
     csrfToken: req.csrfToken(),
+    display
   })
 })
 
