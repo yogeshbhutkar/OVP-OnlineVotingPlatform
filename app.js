@@ -711,11 +711,6 @@ app.post('/signin-voters-post/:url',
         res.redirect('/vote/'+req.params.url)
 })
 
-//Route to add the answers to the table. (still incomplete)
-app.post('/vote/add-answers', connectEnsureLogin.ensureLoggedIn(), async (req, res)=>{
-  console.log("reached")
-  console.log(req.body)
-})
 
 //Exporting the app here so that it can be imported from index and rendered through it.
 module.exports = app;
