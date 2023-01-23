@@ -1,12 +1,14 @@
 const express = require('express')
 const app = express()
-var cookieParser = require("cookie-parser");
+
+var cookieParser = require("cookie-parser")
+var favicon = require('serve-favicon')
 const path = require("path")
 const bodyParser = require("body-parser")
 const session = require("express-session")
-const flash = require("connect-flash");
+const flash = require("connect-flash")
 //Fetching the schemas from DB
-const {Users, election, electionQuestions, electionOptions, voterStatus} = require("./models")
+const {Users, election, electionQuestions, electionOptions, voterStatus, electionAnswers} = require("./models")
 
 //For additional security.
 var csrf = require("tiny-csrf");
@@ -25,6 +27,7 @@ const bcrypt = require("bcrypt");
 //To be later used in bcrypt.
 const saltRounds = 10
 
+app.use(favicon(path.join(__dirname, 'public', 'logo.ico')))
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser("some-secret-key"));
 app.use(
@@ -80,8 +83,8 @@ passport.use(
         passwordField: "password",
         passReqToCallback: true,
       },
-      async (request, username, password, done) => {
-        const ele = await election.findOne({where: {url: '/e/'+request.params.url}})
+      async (req, username, password, done) => {
+        const ele = await election.findOne({where: {url: '/e/'+req.params.url}})
         voterStatus.findOne({ where: { voterDetails: username, eId: ele.id } })
           .then(async (user) => {
             const result = password==user.password?true:false
@@ -125,7 +128,6 @@ passport.use(
 
 //Setting view engine as ejs to use ejs templates.
 app.set("view engine", "ejs")
-
 //Setting the path.
 app.use(express.static(path.join(__dirname, "public")))
 
@@ -232,6 +234,11 @@ app.get("/signout", (req, res, next) => {
 
 //route for dashboard. (After sign up or login the user will be redirected here.)
 app.get('/dashboard', connectEnsureLogin.ensureLoggedIn(), async (req, res)=>{
+
+  try{
+    if(req.user.role==='voter'){
+      return res.redirect('/')
+    }
     const username =  req.user.firstName + " " + req.user.lastName
     const userId = req.user.id
 
@@ -244,6 +251,10 @@ app.get('/dashboard', connectEnsureLogin.ensureLoggedIn(), async (req, res)=>{
         elections: elections,
         csrfToken: req.csrfToken(),
     })
+  }catch(e){
+    console.log(e)
+    return res.status(422).json(e)
+  }
 })
 
 //Route to create an election.
@@ -263,10 +274,11 @@ app.delete(
   async function (req, res) {
     console.log("We have to delete an election with ID: ", req.params.id)
     try {
-      let result = await election.remove(req.params.id, req.user.id)
+      let result = await election.remove(req.params.id);
       console.log(result)
       return res.json({ success: true })
     } catch (error) {
+      console.log(error);
       return res.status(422).json(error)
     }
   }
@@ -300,34 +312,46 @@ app.post('/dbElectionCreate', connectEnsureLogin.ensureLoggedIn(), async (req, r
 
 //Route to handle election.
 app.get('/handle-election/:id',  connectEnsureLogin.ensureLoggedIn(), async (req, res)=>{
-  const electionDetail = await election.findOne({
-    where: {
-      id:  req.params.id,
-    }
-  })
-  const questions = await electionQuestions.getElectionQuestions(electionDetail.id)
-  const voters = await voterStatus.getAllVoters(electionDetail.id)
-  res.render('handleElection', {
-    data: 'Handle Election',
-    logout: "Sign out",
-    title: "Handle Election",
-    electionDetail: electionDetail,
-    questions: questions,
-    voters:voters,
-    csrfToken: req.csrfToken(),
-  })
+  try{
+    const electionDetail = await election.findOne({
+      where: {
+        id:  req.params.id,
+      }
+    })
+    const questions = await electionQuestions.getElectionQuestions(electionDetail.id)
+    const voters = await voterStatus.getAllVoters(electionDetail.id)
+    res.render('handleElection', {
+      data: 'Handle Election',
+      logout: "Sign out",
+      title: "Handle Election",
+      electionDetail: electionDetail,
+      questions: questions,
+      voters:voters,
+      csrfToken: req.csrfToken(),
+    })
+  }catch(e){
+    console.log(e)
+    return res.status(422).json(e)
+  }
+  
 })
 
 app.get('/edit-election-title/:id', connectEnsureLogin.ensureLoggedIn(), async (req, res)=>{
-  const element = await election.findByPk(req.params.id)
-  res.render('editTitle',
-  {
-    data: 'Handle Election',
-    logout: "Sign out",
-    title: "Handle Election",
-    element:element,
-    csrfToken: req.csrfToken(),
-  })
+  try{
+    const element = await election.findByPk(req.params.id)
+    res.render('editTitle',
+    {
+      data: 'Handle Election',
+      logout: "Sign out",
+      title: "Handle Election",
+      element:element,
+      csrfToken: req.csrfToken(),
+    })
+  }catch(e){
+    console.log(e)
+    return res.status(422).json(e)
+  }
+  
 })
 
 //Route to update the title of the election.
@@ -354,69 +378,94 @@ app.put('/edit-title/:id',  connectEnsureLogin.ensureLoggedIn(), async (req, res
 
 //managing questions.
 app.get('/manage-questions/:id', connectEnsureLogin.ensureLoggedIn(), async(req, res)=>{
-  const electionDetail = await election.findOne({
-    where: {
-      id:  req.params.id,
-    }
-  })
-  const questions = await electionQuestions.getElectionQuestions(electionDetail.id)
-  var option = [];
-  for (var i=0; i<questions.length; i++){
-    const options = await electionOptions.getOptions(questions[i].id)
-    for (var j=0; j<options.length; j++){
-      const item = {
-        name: options[j].option,
-        id: options[j].questionId,
-        optionId: options[j].id
+  try{
+    const electionDetail = await election.findOne({
+      where: {
+        id:  req.params.id,
       }
-      option.push(item)
+    })
+    const questions = await electionQuestions.getElectionQuestions(electionDetail.id)
+    var option = [];
+    for (var i=0; i<questions.length; i++){
+      const options = await electionOptions.getOptions(questions[i].id)
+      for (var j=0; j<options.length; j++){
+        const item = {
+          name: options[j].option,
+          id: options[j].questionId,
+          optionId: options[j].id
+        }
+        option.push(item)
+      }
     }
-  }
-
   
-  res.render('manageQuestions', {
-    data: 'Manage Questions',
-    logout: "Sign out",
-    title: "Manage Questions",
-    electionDetail: electionDetail,
-    questions: questions,
-    option: option,
-    csrfToken: req.csrfToken(),
-  })
+    
+    res.render('manageQuestions', {
+      data: 'Manage Questions',
+      logout: "Sign out",
+      title: "Manage Questions",
+      electionDetail: electionDetail,
+      questions: questions,
+      option: option,
+      csrfToken: req.csrfToken(),
+    })
+  }catch(e){
+    console.log(e)
+    return res.status(422).json(e)
+  }
+  
 })
 
 //Route for creating a question 
 app.get('/create-question/:id',connectEnsureLogin.ensureLoggedIn(), async(req, res)=>{
-  const electionDetail = await election.findOne({
-    where: {
-      id:  req.params.id,
-    }
-  })
-  res.render('createQuestion', {
-    data: 'Manage Questions',
-    logout: "Sign out",
-    title: "Manage Questions",
-    electionDetail: electionDetail,
-    csrfToken: req.csrfToken(),
-  })
+  try{
+    const electionDetail = await election.findOne({
+      where: {
+        id:  req.params.id,
+      }
+    })
+    res.render('createQuestion', {
+      data: 'Manage Questions',
+      logout: "Sign out",
+      title: "Manage Questions",
+      electionDetail: electionDetail,
+      csrfToken: req.csrfToken(),
+    })
+  }catch(e){
+    console.log(e)
+    return res.status(422).json(e)
+  }
 })
 
 //Route for creating a new question
 app.get('/new-question/:id',connectEnsureLogin.ensureLoggedIn(), async (req, res)=>{
-  const electionDetail = await election.findOne({
-    where: {
-      id:  req.params.id,
+  
+  
+  
+  try{
+    const electionDetail = await election.findOne({
+      where: {
+        id:  req.params.id,
+      }
+    })
+
+    if (electionDetail.isRunning){
+      return res.redirect('/dashboard')
     }
-  })
-  res.render('newQuestion',
-  {
-    data: 'Create New Question',
-    logout: "Sign out",
-    title: "Create New Question",
-    electionDetail: electionDetail,
-    csrfToken: req.csrfToken(),
+    
+    res.render('newQuestion',
+    {
+      data: 'Create New Question',
+      logout: "Sign out",
+      title: "Create New Question",
+      electionDetail: electionDetail,
+      csrfToken: req.csrfToken(),
+    }
+    );
+  }catch(e){
+    console.log(e)
+    return res.status(422).json(e)
   }
-  );
+  
 })
 
 //Route to post the data of creating a question inside of an election.
@@ -436,24 +485,40 @@ app.post('/new-question/:id',connectEnsureLogin.ensureLoggedIn(), async (req, re
 //Route to add the options.
 //id is question's id.
 app.get('/add-options/:id', connectEnsureLogin.ensureLoggedIn(), async (req, res)=>{
-  const question = await electionQuestions.findOne({
-    where: {
-      id:req.params.id
+  try{
+
+    const question = await electionQuestions.findOne({
+      where: {
+        id:req.params.id
+      }
+    })
+
+    const electionDetail = await election.findOne({
+      where: {
+        id: question.electionId,
+      }
+    })
+    if (electionDetail.isRunning){
+      return res.redirect('/dashboard')
     }
-  })
+   
 
-
-  const options = await electionOptions.getOptions(question.id)
-
-  res.render('addOption',
-  {
-    data: 'Add options',
-    logout: "Sign out",
-    title: "Add options",
-    question,
-    options,
-    csrfToken: req.csrfToken(),
-  })
+    const options = await electionOptions.getOptions(question.id)
+  
+    res.render('addOption',
+    {
+      data: 'Add options',
+      logout: "Sign out",
+      title: "Add options",
+      question,
+      options,
+      csrfToken: req.csrfToken(),
+    })
+  }catch(e){
+    console.log(e)
+    return res.status(422).json(e)
+  }
+  
 })
 
 app.post('/add-option-to-db/:id', connectEnsureLogin.ensureLoggedIn(), async (req, res)=>{
@@ -470,18 +535,24 @@ app.post('/add-option-to-db/:id', connectEnsureLogin.ensureLoggedIn(), async (re
 
 //Route for updating the question.
 app.get('/update-question/:id', connectEnsureLogin.ensureLoggedIn(), async (req, res)=> {
-  const question = await electionQuestions.findOne({
-    where: {
-      id:req.params.id
-    }
-  })
-  res.render('updateQuestion', {
-    data: 'Update Question',
-    logout: "Sign out",
-    title: "Update Question",
-    question,
-    csrfToken: req.csrfToken(),
-  })
+  try{
+    const question = await electionQuestions.findOne({
+      where: {
+        id:req.params.id
+      }
+    })
+    res.render('updateQuestion', {
+      data: 'Update Question',
+      logout: "Sign out",
+      title: "Update Question",
+      question,
+      csrfToken: req.csrfToken(),
+    })
+  }catch(e){
+    console.log(e)
+    return res.status(422).json(e)
+  }
+  
 })
 
 //Put route to handle update question req.
@@ -523,20 +594,26 @@ app.delete('/delete-option/:id', connectEnsureLogin.ensureLoggedIn(), async (req
 
 //Route to update options.
 app.get('/update-option/:id', connectEnsureLogin.ensureLoggedIn(), async (req, res)=> {
-  const option = await electionOptions.findByPk(req.params.id)
-  const question = await electionQuestions.findOne({
-    where:{
-      id: option.questionId
-    }
-  })
-  res.render('updateOption', {
-    data: 'Update options',
-    logout: "Sign out",
-    title: "Update options",
-    option,
-    question,
-    csrfToken: req.csrfToken(),
-  })
+  try{
+    const option = await electionOptions.findByPk(req.params.id)
+    const question = await electionQuestions.findOne({
+      where:{
+        id: option.questionId
+      }
+    })
+    res.render('updateOption', {
+      data: 'Update options',
+      logout: "Sign out",
+      title: "Update options",
+      option,
+      question,
+      csrfToken: req.csrfToken(),
+    })
+  }catch(e){
+    console.log(e)
+    return res.status(422).json(e)
+  }
+  
 })
 
 //Put Route to handle updation of an option
@@ -563,7 +640,6 @@ app.get('/register-voters/:id', connectEnsureLogin.ensureLoggedIn(), (req, res)=
 
 //Post route to add the voters.
 app.post('/register-voters/:id', connectEnsureLogin.ensureLoggedIn(), async (req, res)=> {
-  console.log(req.params.id)
   try {
       await voterStatus.addVoter({
       voterDetails: req.body.voterDetail,
@@ -578,87 +654,101 @@ app.post('/register-voters/:id', connectEnsureLogin.ensureLoggedIn(), async (req
 
 //Route to go to preview ballot page.
 app.get('/launch-election/:id', connectEnsureLogin.ensureLoggedIn(), async (req, res)=> {
-  const electionDetail = await election.findOne({
-    where: {
-      id:  req.params.id,
-    }
-  })
-  const questions = await electionQuestions.getElectionQuestions(electionDetail.id)
-  let noQuestions = false
-  if (questions.length==0){
-    noQuestions = true
-  }
-  var option = [];
-  for (var i=0; i<questions.length; i++){
-    const options = await electionOptions.getOptions(questions[i].id)
-    for (var j=0; j<options.length; j++){
-      const item = {
-        name: options[j].option,
-        id: options[j].questionId,
-        optionId: options[j].id
+  try{
+    const electionDetail = await election.findOne({
+      where: {
+        id:  req.params.id,
       }
-      option.push(item)
+    })
+    const electionEnded = electionDetail.isEnded;
+    const questions = await electionQuestions.getElectionQuestions(electionDetail.id)
+    let noQuestions = false
+    if (questions.length==0){
+      noQuestions = true
     }
-  }
-
-  //To check if there are at-least 2 options for every question.
-  display = false
-  const idArray = []
-  for (let i=0; i<option.length; i++){
-    idArray.push(option[i].id)
-  }
-  const counts={}
-  for (const num of idArray) {
-    counts[num] = counts[num] ? counts[num] + 1 : 1;
-  }
-  const idKeys = Object.keys(counts)
-  for (let i=0; i<idKeys.length; i++){
-    if (counts[idKeys[i]]<2){
-      display = false
-      break
-    }else{
-      display = true
+    var option = [];
+    for (var i=0; i<questions.length; i++){
+      const options = await electionOptions.getOptions(questions[i].id)
+      for (var j=0; j<options.length; j++){
+        const item = {
+          name: options[j].option,
+          id: options[j].questionId,
+          optionId: options[j].id
+        }
+        option.push(item)
+      }
     }
+  
+    //To check if there are at-least 2 options for every question.
+    display = false
+    const idArray = []
+    for (let i=0; i<option.length; i++){
+      idArray.push(option[i].id)
+    }
+    const counts={}
+    for (const num of idArray) {
+      counts[num] = counts[num] ? counts[num] + 1 : 1;
+    }
+    const idKeys = Object.keys(counts)
+    for (let i=0; i<idKeys.length; i++){
+      if (counts[idKeys[i]]<2){
+        display = false
+        break
+      }else{
+        display = true
+      }
+    }
+    const voters = await voterStatus.getAllVoters(electionDetail.id)
+    let noVoters = false
+    if (voters.length==0){
+      noVoters = true
+    }
+    res.render('launchElection',
+    {
+      data: 'Launch Election',
+      logout: "Sign out",
+      title: "Launch Election",
+      electionDetail,
+      questions,
+      option,
+      csrfToken: req.csrfToken(),
+      display,
+      noQuestions,
+      noVoters,
+      electionEnded,
+    })
+  }catch(e){
+    console.log(e)
+    return res.status(422).json(e)
   }
-  const voters = await voterStatus.getAllVoters(electionDetail.id)
-  let noVoters = false
-  if (voters.length==0){
-    noVoters = true
-  }
-  res.render('launchElection',
-  {
-    data: 'Launch Election',
-    logout: "Sign out",
-    title: "Launch Election",
-    electionDetail,
-    questions,
-    option,
-    csrfToken: req.csrfToken(),
-    display,
-    noQuestions,
-    noVoters,
-  })
+  
 })
 
 //Route to go to launched live state of the election.
 app.get('/live-election/:id', connectEnsureLogin.ensureLoggedIn(), async(req, res)=>{
-  const electionDetail = await election.findOne({
-    where: {
-      id:  req.params.id,
-    }
-  })
-  const questions = await electionQuestions.getElectionQuestions(electionDetail.id)
-  const voters = await voterStatus.getAllVoters(electionDetail.id)
-  res.render('liveElection', {
-    data: 'Live Election',
-    logout: "Sign out",
-    title: "Live Election",
-    id: req.params.id,
-    electionDetail,
-    questions,
-    voters,
-    csrfToken: req.csrfToken(),
-  })
+  try{
+    const electionDetail = await election.findOne({
+      where: {
+        id:  req.params.id,
+      }
+    })
+    await electionDetail.setRunningTrue();
+    const questions = await electionQuestions.getElectionQuestions(electionDetail.id)
+    const voters = await voterStatus.getAllVoters(electionDetail.id)
+    res.render('liveElection', {
+      data: 'Live Election',
+      logout: "Sign out",
+      title: "Live Election",
+      id: req.params.id,
+      electionDetail,
+      questions,
+      voters,
+      csrfToken: req.csrfToken(),
+    })
+  }catch(e){
+    console.log(e);
+    return res.status(422).json(e)
+  }
 })
 
 app.get("/e/:url", async (req, res)=>{
@@ -672,36 +762,47 @@ app.get("/e/:url", async (req, res)=>{
 })
 
 app.get('/vote/:url', connectEnsureLogin.ensureLoggedIn(), async (req, res)=>{
-  const electionDetail = await election.findOne({
-    where: {
-      url:  '/e/'+req.params.url,
-    }
-  })
-  const questions = await electionQuestions.getElectionQuestions(electionDetail.id)
-  const voters = await voterStatus.getAllVoters(electionDetail.id)
-
-  var option = [];
-  for (var i=0; i<questions.length; i++){
-    const options = await electionOptions.getOptions(questions[i].id)
-    for (var j=0; j<options.length; j++){
-      const item = {
-        name: options[j].option,
-        id: options[j].questionId,
-        optionId: options[j].id
+  try{
+    const electionDetail = await election.findOne({
+      where: {
+        url:  '/e/'+req.params.url,
       }
-      option.push(item)
+    })
+    if (req.user.status) {
+      req.flash("error", "You have voted successfully")
+      return res.redirect(`/vote/${electionDetail.id}/results`)
     }
+    const questions = await electionQuestions.getElectionQuestions(electionDetail.id)
+    const voters = await voterStatus.getAllVoters(electionDetail.id)
+  
+    var option = [];
+    for (var i=0; i<questions.length; i++){
+      const options = await electionOptions.getOptions(questions[i].id)
+      for (var j=0; j<options.length; j++){
+        const item = {
+          name: options[j].option,
+          id: options[j].questionId,
+          optionId: options[j].id
+        }
+        option.push(item)
+      }
+    }
+    return res.render("vote", {
+      data: 'Vote',
+      logout: "Sign out",
+      title: "Caste your vote",
+      electionDetail: electionDetail,
+      questions: questions,
+      voters:voters,
+      option,
+      csrfToken: req.csrfToken(),
+      url: req.params.url
+    })
+  }catch(e){
+    console.log(e)
+    return res.status(422).json(e)
   }
-  res.render("vote", {
-    data: 'Vote',
-    logout: "Sign out",
-    title: "Caste your vote",
-    electionDetail: electionDetail,
-    questions: questions,
-    voters:voters,
-    option,
-    csrfToken: req.csrfToken(),
-  })
+  
 })
 
 app.post('/signin-voters-post/:url',
@@ -713,6 +814,107 @@ app.post('/signin-voters-post/:url',
         res.redirect('/vote/'+req.params.url)
 })
 
+
+//Posting answers to the data base.
+app.post('/vote/:url', connectEnsureLogin.ensureLoggedIn(),async (req, res)=>{
+  try {
+    const electionDetail = await election.findOne({
+      where: {
+        url: '/e/'+req.params.url,
+      }
+    });
+    if (!req.user) {
+      req.flash("error", "Please login before trying to Vote")
+      return res.redirect(`/e/${req.params.url}`)
+    }
+    if (req.user.status) {
+      req.flash("error", "You have voted successfully")
+      return res.redirect(`/vote/${electionDetail.id}/results`)
+    }
+    if (electionDetail.isEnded) {
+      req.flash("error", "Election does not exist. Please contact admin.")
+      return res.redirect(`/vote/${electionDetail.id}/results`)
+    }
+    const questions = await electionQuestions.getElectionQuestions(electionDetail.id)
+    for (const q of questions) {
+      let qid = `${q.id}`
+      let chosenOption = req.body[qid];
+      await electionAnswers.addResponse({
+        voterId: req.user.id,
+        electionId: electionDetail.id,
+        questionId: q.id,
+        chosenOption: chosenOption,
+      });
+    }
+    await voterStatus.status(req.user.id)
+    return res.redirect(`/vote/${electionDetail.id}/results`)
+  } catch (error) {
+    console.log(error)
+    return res.status(422).json(error)
+  }
+})
+
+//To get the results, given an election id of a particular election.
+app.get('/vote/:id/results', async (req, res)=>{
+  try{
+    const votedVoters = await voterStatus.fetchVoted(req.params.id)
+    const notVotedVoters = await voterStatus.fetchNotVoted(req.params.id)
+    const totalVoters = await voterStatus.getAllVoters(req.params.id)
+    const questions = await electionQuestions.getElectionQuestions(req.params.id)
+
+
+    let questionReport = []
+
+    for (let i=0; i<questions.length; i++){
+      opt = await electionOptions.getOptions(questions[i].id)
+      let optList = []
+      let ansList = []
+      for (let j=0; j<opt.length; j++){
+        optList.push(opt[j].option)
+        console.log(opt[j].option)
+        const ans = await electionAnswers.getAllAnswersOptionId(opt[j].id)
+        ansList.push(ans.length)
+      }
+      let temp = {
+        question:questions[i].question,
+        option: optList,
+        answer: ansList,
+      }
+      questionReport.push(temp)
+    }
+
+
+    res.render('result', {
+      data: 'OVP - An online voting platform',
+      logout: "",
+      title: "OVP - An online voting platform",
+      csrfToken: req.csrfToken(),
+      votedVoters,
+      notVotedVoters,
+      totalVoters,
+      questionReport,
+      completed: votedVoters.length,
+      pending: notVotedVoters.length,
+    });
+  }catch(e){
+    console.log(e)
+    return res.status(422).json(e)
+  }
+  
+})
+
+//To mark the election as complete
+app.get('/end-election/:id', connectEnsureLogin.ensureLoggedIn(), async (req, res)=>{
+  try{
+    const electionDetail = await election.findByPk(req.params.id)
+    await electionDetail.markDone()
+    await electionDetail.setRunningFalse()
+    res.redirect(`/vote/${req.params.id}/results`)
+  }catch(err){
+    console.log(err);
+    return res.json(err);
+  }
+})
 
 //Exporting the app here so that it can be imported from index and rendered through it.
 module.exports = app;

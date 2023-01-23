@@ -16,6 +16,7 @@ module.exports = (sequelize, DataTypes) => {
       });
       electionOptions.hasMany(models.electionAnswers, {
         foreignKey: "chosenOption",
+        onDelete: "CASCADE",
       });
       // define association here
     }

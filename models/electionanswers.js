@@ -13,16 +13,45 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       electionAnswers.belongsTo(models.voterStatus, {
         foreignKey: "vId",
+        onDelete: "CASCADE",
       });
       electionAnswers.belongsTo(models.election, {
         foreignKey: "electionId",
+        onDelete: "CASCADE",
       });
       electionAnswers.belongsTo(models.electionQuestions, {
         foreignKey: "questionId",
+        onDelete: "CASCADE",
       });
       electionAnswers.belongsTo(models.electionOptions, {
         foreignKey: "chosenOption",
+        onDelete: "CASCADE",
       });
+
+    }
+    static addResponse({ voterId, electionId, questionId, chosenOption }) {
+      return this.create({
+        vId:voterId,
+        electionId:electionId,
+        questionId:questionId,
+        chosenOption:chosenOption,
+      });
+    }
+
+    static getAllAnswers(questionId){
+      return this.findAll({
+        where: {
+          questionId,
+        }
+      })
+    }
+
+    static getAllAnswersOptionId(chosenOption){
+      return this.findAll({
+        where: {
+          chosenOption,
+        }
+      })
     }
   }
   electionAnswers.init({

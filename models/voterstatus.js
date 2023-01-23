@@ -12,6 +12,11 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       voterStatus.belongsTo(models.election, {
         foreignKey: "eId",
+        onDelete: "CASCADE"
+      });
+      voterStatus.hasMany(models.electionAnswers, {
+        foreignKey: "vId",
+        onDelete: "CASCADE"
       });
       // define association here
     }
@@ -23,10 +28,41 @@ module.exports = (sequelize, DataTypes) => {
       });
     }
 
+    static async status(id) {
+      return await this.update(
+        {
+          status: true,
+        },
+        {
+          where: {
+            id,
+          },
+        }
+      );
+    }
+
     static getAllVoters(eId){
       return this.findAll({
         where: {
           eId:eId,
+        }
+      })
+    }
+
+    static fetchVoted(eId){
+      return this.findAll({
+        where: {
+          eId:eId,
+          status: true,
+        }
+      })
+    }
+
+    static fetchNotVoted(eId){
+      return this.findAll({
+        where: {
+          eId:eId,
+          status: false,
         }
       })
     }

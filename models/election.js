@@ -24,6 +24,8 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "eId",
         onDelete: "CASCADE",
       });
+
+      
     }
 
     static getElections(userId){
@@ -34,11 +36,10 @@ module.exports = (sequelize, DataTypes) => {
       })
     }
 
-    static async remove(id, userId) {
+    static async remove(id) {
       return this.destroy({
         where: {
-          id,
-          userId,
+          id
         },
       });
     }
@@ -55,6 +56,18 @@ module.exports = (sequelize, DataTypes) => {
 
     setElectionTitle(val){
       return this.update({name:val})
+    }
+
+    setRunningTrue(){
+      return this.update({isRunning: true})
+    }
+
+    setRunningFalse(){
+      return this.update({isRunning: false})
+    }
+
+    markDone(){
+      return this.update({isEnded:true})
     }
 
   }

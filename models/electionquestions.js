@@ -13,9 +13,15 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       electionQuestions.belongsTo(models.election, {
         foreignKey: "electionId",
+        onDelete: "CASCADE",
       });
       electionQuestions.hasMany(models.electionOptions, {
         foreignKey: "questionId",
+        onDelete: "CASCADE",
+      });
+      electionQuestions.hasMany(models.electionAnswers, {
+        foreignKey: "questionId",
+        onDelete: "CASCADE",
       });
     }
 

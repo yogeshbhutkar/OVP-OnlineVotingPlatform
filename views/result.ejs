@@ -1,0 +1,93 @@
+<%- include('topHTML.ejs') %>
+    <script>
+        let ctx = null
+    </script>
+    <div class="wrapper">
+        <nav class="flex items-center justify-between flex-wrap bg-gradient-to-r from-purple-600 to-indigo-600 p-2 ">
+            <div>
+                <a href="/"><h1 class="font-bold text-white text-2xl pl-4">OVP</h1></a>
+            </div>
+        </nav>
+        <div class="bg-gray-50 dark:bg-gray-900 flex flex-col px-10 py-8 mx-auto md:h-screen lg:py-0 wrapper-element w-full">
+            <div class="px-10 py-10">
+                <h1 class="text-white text-4xl font-semibold">Election Statistics</h1>
+                <div class="bg-white rounded-lg shadow dark:border mt-5 dark:bg-gray-800 dark:border-gray-700">
+                    <div class="py-5 px-5 grid grid-cols-4">
+                        <!-- Empty div for spacing -->
+                        <div></div>
+                        <div class="my-auto items-center">
+                            <p class="text-white font-semibold text-xl">Total Voters:<span class="px-3"><%= totalVoters.length %></span></p>
+                            <p class="text-white font-semibold text-xl py-4">Voted:<span class="px-3"><%= votedVoters.length %></span></p>
+                            <p class="text-white font-semibold text-xl">Not Voted:<span class="px-3"><%= notVotedVoters.length %></span></p>
+                        </div>
+                        <div class="voter-graph bg-white rounded-xl ">
+                            <canvas id="voter-stats" class="object-contain"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="px-10 py-10">
+                <h1 class="text-white text-4xl font-semibold">Question-wise report</h1>
+                <% for (let i=0; i<questionReport.length; i++) {%>
+                    <div class="bg-white rounded-lg shadow dark:border mt-5 dark:bg-gray-800 dark:border-gray-700 px-5 py-5">
+                        <div class="grid grid-cols-2">
+                            <div>
+                                <p class="text-white font-semibold text-2xl">Question #<%= (i+1) %></p>
+                                <div class="pl-7">
+                                    <p class="text-white font-semibold text-xl pt-3 pb-1"><%= questionReport[i]['question'] %></p>
+                                    <% for (let j=0; j<questionReport[i]['option'].length; j++) {%>
+                                        <% if (Number.isNaN(questionReport[i]['answer'][j]/votedVoters.length)) {%>
+                                            <p class="text-white font-semibold text-xl"><%= questionReport[i]['option'][j] %> <span class="text-2xl px-5 font-bold text-purple-500"> 0%</span></p>
+                                        <%}%>
+                                        <% if (!Number.isNaN(questionReport[i]['answer'][j]/votedVoters.length)) {%>
+                                            <p class="text-white font-semibold text-xl"><%= questionReport[i]['option'][j] %> <span class="text-2xl px-5 font-bold text-purple-500"> <%= (questionReport[i]['answer'][j]/votedVoters.length).toFixed(4)*100 %>%</span></p>
+                                        <%}%>
+                                    <% } %> 
+                                </div>
+                            </div>
+                            <div class="voter-graph bg-white rounded-xl ">
+                                <canvas id="voter-stats-<%=i%>" class="object-contain"></canvas>
+                            </div>
+                            <script>
+                                ctx = document.getElementById('voter-stats-<%=i%>').getContext('2d');
+                                    new Chart(ctx, {
+                                        type: 'pie',
+                                        data: {
+                                            labels: "<%=questionReport[i]['option']%>".split(','),
+                                            datasets:[{
+                                                label: "<%=questionReport[i]['question']%>",
+                                                data: "<%=questionReport[i]['answer']%>".split(','),
+                                            }]
+                                        },
+                                        options: {
+                                            responsive: true
+                                        },
+                                    })
+                            </script>
+                        </div>
+                    </div>    
+                <% } %>  
+            </div>
+        </div>
+    </div>
+    <script>
+        const myChart = document.getElementById('voter-stats').getContext('2d');
+        let massPopChart = new Chart(myChart, {
+            type: 'doughnut',
+            data: {
+                labels: ['Voted', 'Not-Voted'],
+                datasets:[{
+                    label: ' Votes',
+                    data: [
+                        "<%=completed%>",
+                        "<%=pending%>",
+                    ]
+                }]
+            },
+            options: {
+                responsive: true
+            }
+        })
+        
+    </script>
+<%- include('bottomHTML.ejs') %>

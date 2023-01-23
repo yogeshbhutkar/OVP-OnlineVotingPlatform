@@ -41,3 +41,8 @@ body {
 .set-width {
     width: 30%;
 }
+
+.voter-graph {
+    height: 35vh;
+    width: 35vh;
+}

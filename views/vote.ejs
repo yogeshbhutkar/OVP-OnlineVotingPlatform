@@ -4,23 +4,22 @@
         <div class="bg-gray-50 dark:bg-gray-900 flex flex-col px-10 py-8 mx-auto md:h-screen lg:py-0 wrapper-element w-full ">
             <div class="text-white px-10 py-3 bg-gray-50 dark:bg-gray-900">
                 <p class="font-semibold pb-5 pt-10 text-3xl">Ballot</p>
+                <form action="/vote/<%= url %>" method="post">
+                    <input type="hidden" name="_csrf" value="<%=csrfToken%>">
                     <% for (var i=0; i<questions.length; i++) { %>
                         <div class="">
                             <p class="font-semibold text-2xl inline">Question #<%= i+1 %></p>
                         </div>
                         <label class="font-semibold text-xl pt-2"><%= questions[i].question %></label>
                         <p class="font-semibold pb-2 pt-1 text-xl"><%= questions[i].description %></p>
-
                         <div>
                             <p class="font-semibold text-2xl inline">Options</p> 
                         </div>
-                        <form action="" method="post">
-                            <input type="hidden" name="_csrf" value="<%=csrfToken%>">
                             <div class="pb-10">
-                                <% for (var j=0; j<option.length; j++) { %>
+                                <% for (var j=0; j<(option.length); j++) { %>
                                     <% if (option[j].id === questions[i].id) {%>
                                         <div class="pt-2">
-                                            <input type="radio" name="<%=questions[i].id%>" id="<%=option[j].optionId%>">
+                                            <input type="radio" name="<%=questions[i].id%>" id="<%=option[j].optionId%>" required value="<%=option[j].optionId%>">
                                             <label for="<%=option[j].optionId%>" class="font-semibold text-xl inline-block pr-3"><%= option[j].name %></label>
                                         </div>
                                     <% } %> 
